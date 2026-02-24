@@ -1,7 +1,7 @@
 #Build process for the website " Devil's Advocate."
 
 
-23 February 2026 - 24 February 2026
+    23 February 2026 - 24 February 2026
 
 I started by analyzing the assignment requirements and defining what the system should actually do. The core requirement was to accept multiple options, evaluate them using criteria with weights, and produce an explainable recommendation.
 
@@ -17,7 +17,8 @@ Explanation Generator
 I also chose a web app approach so the system is interactive and easy to test.
 
 
-25th February 2026
+    25th February 2026
+    
 I started by building a very quick prototype to test the core idea of the decision system.
 
 Goal of the prototype:
