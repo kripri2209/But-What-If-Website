@@ -1,3 +1,9 @@
+// CHECKPOINT: chat-interface.tsx
+// Saved on March 1, 2026
+
+// This is a backup of your current chat-interface.tsx file.
+// Restore by copying contents back to chat-interface.tsx if needed.
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -10,8 +16,6 @@ interface ChatMessage {
 }
 
 export function ChatInterface() {
-    // ...existing state declarations...
-    // (moved below)
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "system",
@@ -449,4 +453,3 @@ export function ChatInterface() {
     </div>
   );
 }
-
