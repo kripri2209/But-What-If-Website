@@ -37,23 +37,14 @@ export const metadata: Metadata = {
         url: '/icon-dark-32x32.png',
         media: '(prefers-color-scheme: dark)',
       },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
     ],
-    apple: '/apple-icon.png',
   },
-}
+};
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${playfair.variable} ${crimson.variable} ${robotoMono.variable}`}>
-      <body className="font-serif antialiased" suppressHydrationWarning>
+    <html lang="en" className={`${playfair.variable} ${crimson.variable} ${robotoMono.variable}`}> 
+      <body>
         {children}
         <Analytics />
       </body>

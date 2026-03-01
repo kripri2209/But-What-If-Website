@@ -1,0 +1,10 @@
+import { ChatInterface } from '@/components/chat-interface'
+
+export const metadata = {
+  title: 'Chat - Devils Advocate',
+  description: 'Challenge your decisions with AI-powered devil\'s advocacy',
+}
+
+export default function ChatPage() {
+  return <ChatInterface />
+}

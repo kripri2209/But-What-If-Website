@@ -75,8 +75,10 @@
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans: var(--font-crimson), 'Georgia', 'Times New Roman', serif;
+  --font-serif: var(--font-crimson), 'Georgia', 'Times New Roman', serif;
+  --font-display: var(--font-playfair), 'Georgia', serif;
+  --font-mono: var(--font-mono), 'Courier New', monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -122,4 +124,26 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Devil's Advocate Typography */
+.font-display {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Animation delays for atmospheric particles */
+.delay-100 {
+  animation-delay: 0.5s;
+}
+
+.delay-200 {
+  animation-delay: 1s;
 }

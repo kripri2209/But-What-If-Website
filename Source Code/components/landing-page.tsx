@@ -45,7 +45,7 @@ export function LandingPage() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
               <AlertCircle className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-white">Devils Advocate</span>
+            <span className="text-xl font-bold text-white font-[family-name:var(--font-playfair)]">Devils Advocate</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/analytics">
@@ -66,7 +66,7 @@ export function LandingPage() {
       <section className="max-w-6xl mx-auto px-6 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h1 className="text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight font-[family-name:var(--font-playfair)]">
               Make better decisions by questioning everything
             </h1>
             <p className="text-xl text-slate-300 mb-8 leading-relaxed">
