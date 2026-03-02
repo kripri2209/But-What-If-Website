@@ -68,6 +68,10 @@ Grok , Supabase and Copliot were majorly used AI.
 
 The Website was made to have an intial loading screen , a white screen showcasing the question , and a white bubble prompting to question everything , then the chat interface page .
 
+    2nd March 2026
+The Website Chat inteface was fixed . the Website initial plan has worked and further improvements were considered.
+
+
 
 
 
