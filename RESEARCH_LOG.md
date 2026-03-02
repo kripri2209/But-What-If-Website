@@ -1,4 +1,5 @@
    23 February 2026 
+   
 It was research-focused, and I tried to come up with the ideas of a project I would like to build on.
 
 (Chatgpt and google)
@@ -11,6 +12,7 @@ It was research-focused, and I tried to come up with the ideas of a project I wo
 
 
    24 February 2026
+   
 Today, After finalisng on the base Idea of my project, I  decided to explore the various tech stacks and UI implementations. I visited websites like Behance to get a grasp of an initial website draft, and visited some Design-to-code websites to test them out. 
 
 (ChatGPT)
@@ -24,6 +26,7 @@ Today, After finalisng on the base Idea of my project, I  decided to explore the
 1. How to make your first AI Project.
 
    26th February 2026
+   
 Mostly Copliot error fixing .
 
 (Youtube)
@@ -59,6 +62,7 @@ Database: Schema for conversations, messages, user data, and decision analytics
 Key Pages: Landing page, multi-turn chat interface with conversation history sidebar, and analytics dashboard for tracking past decisions
 AI Strategy: GPT-4 system prompt engineered to identify assumptions, challenge reasoning, explore failure modes, and present opposing viewpoints
 Message Flow: User input → OpenAI API call with conversation context → streamed response → database storage → visual indicators for devil's advocate angles applied
+
 
    27th February 2026
 
@@ -99,6 +103,7 @@ pinterest.com
 (47) Pinterest
 pinterest.com
 
+
    28th February 2026
 
 (Google)
@@ -132,6 +137,7 @@ localhost:3000
 
 
    1st March 2026
+   
 (Google)
 12:56 AM
 Devil's Advocate AI | kripri's projects | Supabase
