@@ -66,10 +66,21 @@ Various other AI were researched and considered.
 The first fully working initial website was made . Chat interface showed error , yet to be fixed and finalized.
 Grok , Supabase and Copliot were majorly used AI. 
 
+Initially, the API returned 500 errors because the route.ts file contained incomplete code. This was fixed by copying the full implementation from the source code version, which highlighted the importance of verifying which files Next.js actually uses for routing.
+
+Next, the server failed to start because port 3000 was already in use. This happened because previous Node processes were still running in the background. The issue was resolved by killing the processes before restarting the server.
+
+Even after fixing the code, the API continued failing because the server had not restarted with the updated code. Restarting the server solved the problem and showed that API route changes require a full restart.
+
 The Website was made to have an intial loading screen , a white screen showcasing the question , and a white bubble prompting to question everything , then the chat interface page .
 
     2nd March 2026
 The Website Chat inteface was fixed . the Website initial plan has worked and further improvements were considered.
+Later, the AI responses sounded too lecture-like and educational. Based on feedback, the system prompts were rewritten with a clearer structure and a more skeptical tone so the AI stayed in character.
+
+Another issue appeared with formatting: bullet points were displayed as a paragraph. This was fixed by using the CSS property white-space: pre-wrap, which preserves line breaks.
+
+Finally, a checkpoint of the project was saved after the debugging process. Backup files were created for the API route, environment configuration, chat interface, and documentation so the working state could be restored if future changes caused problems.
 
 
 
