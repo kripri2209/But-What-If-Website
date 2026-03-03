@@ -82,6 +82,9 @@ Another issue appeared with formatting: bullet points were displayed as a paragr
 
 Finally, a checkpoint of the project was saved after the debugging process. Backup files were created for the API route, environment configuration, chat interface, and documentation so the working state could be restored if future changes caused problems.
 
+    3rd March 2026
+basic UI of website was changed from dark theme to light theme . Various options of the users input were to be considered and a tab style folder response for the Advocates reponse was considered.
+
 
 
 
