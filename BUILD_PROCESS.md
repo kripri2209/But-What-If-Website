@@ -85,6 +85,11 @@ Finally, a checkpoint of the project was saved after the debugging process. Back
     3rd March 2026
 basic UI of website was changed from dark theme to light theme . Various options of the users input were to be considered and a tab style folder response for the Advocates reponse was considered.
 
+    4th March 2026
+i researchedd on how to make the AI more critical about the user's choice , and also began working on the Diagrams for the system . 
+I used canva to create the diagrams.
+The UI style , was still uchanged and the previous idea was still worked upon.
+
 
 
 
