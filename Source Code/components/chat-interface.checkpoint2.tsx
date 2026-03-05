@@ -9,19 +9,6 @@ interface ChatMessage {
   content: string;
 }
 
-// Helper function to render text with markdown bold
-const renderMarkdown = (text: string) => {
-  const parts = text.split(/(\*\*.*?\*\*)/g);
-  
-  return parts.map((part, index) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      const boldText = part.slice(2, -2);
-      return <strong key={index} className="font-bold">{boldText}</strong>;
-    }
-    return <span key={index}>{part}</span>;
-  });
-};
-
 export function ChatInterface() {
     // ...existing state declarations...
     // (moved below)
@@ -34,40 +21,8 @@ export function ChatInterface() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lastSubmitTime, setLastSubmitTime] = useState(0);
   const [showIntro, setShowIntro] = useState(true);
   const [showOrbitalDots, setShowOrbitalDots] = useState(false);
-  const [isOnline, setIsOnline] = useState(true);
-  
-  // Constants for validation
-  const MAX_INPUT_LENGTH = 2000;
-  const MIN_SUBMIT_INTERVAL = 2000; // 2 seconds between submissions
-  
-  // Network status monitoring
-  useEffect(() => {
-    const handleOnline = () => {
-      setIsOnline(true);
-      setError(null);
-    };
-    
-    const handleOffline = () => {
-      setIsOnline(false);
-      setError('You are currently offline. Messages will be sent when connection is restored.');
-    };
-    
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    
-    // Check initial status
-    setIsOnline(navigator.onLine);
-    
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-  
   const introQuestions = [
     "I WANT TO QUIT",
     "WHAT IF I'M WRONG?",
@@ -137,66 +92,15 @@ export function ChatInterface() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Clear previous errors
-    setError(null);
-    
-    // Prevent spam submissions
-    const now = Date.now();
-    if (now - lastSubmitTime < MIN_SUBMIT_INTERVAL) {
-      setError('Please wait a moment before sending another message.');
-      return;
-    }
-    
-    // Basic validation
     if (!input || input.trim() === "" || isLoading) {
       return;
     }
-    
-    const userMessage = input.trim();
-    
-    // Length validation
-    if (userMessage.length > MAX_INPUT_LENGTH) {
-      setError(`Message too long. Please keep it under ${MAX_INPUT_LENGTH} characters.`);
-      return;
-    }
-    
-    if (userMessage.length < 3) {
-      setError('Message too short. Please provide more context.');
-      return;
-    }
-    
-    // Check for only emojis/symbols
-    const hasText = /[a-zA-Z0-9]/.test(userMessage);
-    if (!hasText) {
-      setError('Please include actual text, not just symbols or emojis.');
-      return;
-    }
-    
-    // Check network status
-    if (!isOnline) {
-      setError('You are offline. Please check your internet connection.');
-      return;
-    }
-    
+    const userMessage = input.trim().toUpperCase();
     setInput("");
     setIsLoading(true);
-    setLastSubmitTime(now);
-    
     const newMessages: ChatMessage[] = [...messages, { role: "user", content: userMessage }];
     setMessages(newMessages);
-    
-    // Set timeout for slow responses
-    const timeoutId = setTimeout(() => {
-      if (isLoading) {
-        setError('Response is taking longer than expected. The server might be busy.');
-      }
-    }, 15000); // 15 second warning
-    
     try {
-      const controller = new AbortController();
-      const requestTimeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
-      
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
@@ -208,59 +112,29 @@ export function ChatInterface() {
             content: m.content,
           })),
         }),
-        signal: controller.signal,
       });
-      
-      clearTimeout(requestTimeout);
-      
-      const data = await response.json();
-      
       if (!response.ok) {
-        // Handle specific error status codes
-        if (response.status === 429) {
-          throw new Error(data.error || 'Too many requests. Please wait a moment.');
-        } else if (response.status === 400) {
-          throw new Error(data.error || 'Invalid input. Please try rephrasing.');
-        } else if (response.status === 503) {
-          throw new Error(data.error || 'Service temporarily unavailable. Please try again.');
-        } else {
-          throw new Error(data.error || `Request failed with status ${response.status}`);
-        }
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
-      const assistantMessage = data?.text || "No response received.";
-      
+      const data = await response.json();
+      const assistantMessage = data?.text || "NO RESPONSE RECEIVED.";
       setMessages([
         ...newMessages,
         {
           role: "assistant",
-          content: assistantMessage,
+          content: `ADVOCATE: ${assistantMessage.toUpperCase()}`,
         },
       ]);
-      setError(null);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Chat error:", err);
-      
-      let errorMessage = "Unable to get response. Please try again.";
-      
-      if (err.name === 'AbortError') {
-        errorMessage = "Request timed out. Please try a shorter message or check your connection.";
-      } else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-        errorMessage = "Network error. Please check your internet connection.";
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      
       setMessages([
         ...newMessages,
         {
           role: "assistant",
-          content: `**System Error:**\n\n${errorMessage}\n\nPlease try again or refresh the page if the problem persists.`,
+          content: "ADVOCATE: CRITICAL ERROR. CONNECTION DISRUPTED. RETRY TRANSMISSION.",
         },
       ]);
-      setError(errorMessage);
     } finally {
-      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };
@@ -283,6 +157,7 @@ export function ChatInterface() {
               "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
             fontSize: "13px",
             letterSpacing: "0.35em",
+            textTransform: "uppercase",
             fontWeight: 300,
             overflow: "hidden",
             transition: "background-color 2s ease",
@@ -326,7 +201,7 @@ export function ChatInterface() {
   if (showOrbitalDots) {
     return (
       <div
-        className="fixed inset-0 bg-white flex items-center justify-center cursor-pointer overflow-hidden z-[9999]"
+        className="fixed inset-0 bg-black flex items-center justify-center cursor-pointer overflow-hidden z-[9999]"
         onClick={() => setShowOrbitalDots(false)}
       >
         <div className="relative w-full h-full flex items-center justify-center">
@@ -377,6 +252,7 @@ export function ChatInterface() {
                   color: 'white',
                   fontSize: '18px',
                   letterSpacing: '0.35em',
+                  textTransform: 'uppercase',
                   padding: '0 2rem',
                   textAlign: 'center',
                   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
@@ -426,6 +302,7 @@ export function ChatInterface() {
               color: '#27272a',
               fontSize: '12px',
               letterSpacing: '0.2em',
+              textTransform: 'uppercase',
               fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
               fontWeight: 300
             }}
@@ -487,26 +364,20 @@ export function ChatInterface() {
   }
 
   return (
-    <div className="relative min-h-screen bg-white text-black">
-      {/* Top minimalist status */}
+    <div className="relative min-h-screen bg-black text-white">
+      {/* Top minimalist status - white only */}
       <div className="absolute top-8 left-8 z-20">
-        <span className="text-[10px] font-mono tracking-widest text-zinc-700">v4.2</span>
+        <span className="text-[10px] font-mono tracking-widest text-zinc-200">v4.2</span>
       </div>
-      <div className="absolute top-8 right-8 z-20 flex items-center gap-4">
-        <span className="text-[10px] font-mono tracking-widest text-black">ACTIVE</span>
-        {!isOnline && (
-          <span className="text-[10px] font-mono tracking-widest text-red-600 flex items-center gap-1">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-600"></span>
-            OFFLINE
-          </span>
-        )}
+      <div className="absolute top-8 right-8 z-20">
+        <span className="text-[10px] font-mono tracking-widest text-white">ACTIVE</span>
       </div>
       {/* Main Dramatic Content */}
       <div className="flex-1 flex items-center justify-center relative">
         {/* Dramatic content block goes here (omitted for brevity) */}
       </div>
       {/* Bottom warning modules */}
-      <div className="border-t border-zinc-300 py-6 bg-white/20 backdrop-blur-sm">
+      <div className="border-t border-zinc-800 py-6 bg-black/20 backdrop-blur-sm">
         {/* Warning modules block goes here (omitted for brevity) */}
       </div>
       {/* Scroll Indicator */}
@@ -514,10 +385,10 @@ export function ChatInterface() {
         {/* Scroll indicator block goes here (omitted for brevity) */}
       </div>
       {/* Chat Interface Section with matching atmosphere */}
-      <div className="flex h-screen flex-col" style={{ background: "white" }}>
+      <div className="flex h-screen flex-col" style={{ background: "black" }}>
         {/* Header */}
-        <div className="border-b border-zinc-300 py-3 backdrop-blur-sm bg-white/40">
-          <p className="text-xs text-zinc-700 font-mono tracking-wider text-center">
+        <div className="border-b border-zinc-800 py-3 backdrop-blur-sm bg-black/40">
+          <p className="text-xs text-zinc-200 font-mono tracking-wider text-center">
             PROTOCOL: INTERFACE-ALPHA // CORE ENGINE: ADVOCATE V4.2 // STATUS: ACTIVE
           </p>
         </div>
@@ -533,22 +404,22 @@ export function ChatInterface() {
                 <div
                   className={`max-w-3xl rounded px-5 py-3 backdrop-blur-sm ${
                     message.role === "system"
-                      ? "bg-gray-100 border border-gray-300"
+                      ? "bg-zinc-900 border border-zinc-700"
                       : message.role === "user"
-                      ? "bg-gray-100 border border-gray-300"
-                      : "bg-gray-100 border border-gray-300"
+                      ? "bg-zinc-900 border border-zinc-700"
+                      : "bg-zinc-900 border border-zinc-700"
                   }`}
                 >
-                  <p className={`font-mono text-sm leading-relaxed tracking-wide text-gray-800 whitespace-pre-wrap`}>
-                    {renderMarkdown(message.content)}
+                  <p className={`font-mono text-sm leading-relaxed tracking-wide text-zinc-200 whitespace-pre-wrap`}>
+                    {message.content}
                   </p>
                 </div>
               </div>
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-100 border border-gray-300 rounded px-5 py-3 backdrop-blur-sm">
-                  <p className="font-mono text-sm text-gray-800">ADVOCATE: ANALYZING...</p>
+                <div className="bg-zinc-900 border border-zinc-700 rounded px-5 py-3 backdrop-blur-sm">
+                  <p className="font-mono text-sm text-zinc-200">ADVOCATE: ANALYZING...</p>
                 </div>
               </div>
             )}
@@ -556,37 +427,21 @@ export function ChatInterface() {
           </div>
         </div>
         {/* Input Area */}
-        <div className="border-t border-zinc-300 py-4 bg-white/40 backdrop-blur-sm">
-          {/* Error Display */}
-          {error && (
-            <div className="max-w-5xl mx-auto px-8 mb-3">
-              <div className="bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded-md font-mono text-sm flex items-center justify-between">
-                <span>{error}</span>
-                <button
-                  onClick={() => setError(null)}
-                  className="text-red-600 hover:text-red-800 font-bold ml-4"
-                  aria-label="Dismiss error"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-          )}
-          
+        <div className="border-t border-zinc-800 py-4 bg-black/40 backdrop-blur-sm">
           <form onSubmit={handleSubmit} className="max-w-5xl mx-auto px-8 flex gap-3">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Describe your decision or dilemma"
-              className="flex-1 bg-gray-100 border-gray-300 text-gray-800 placeholder:text-gray-400 font-mono text-sm focus:border-black focus-visible:ring-black backdrop-blur-sm"
+              className="flex-1 bg-zinc-900 border-zinc-700 text-zinc-200 placeholder:text-zinc-500 font-mono text-sm focus:border-white focus-visible:ring-white backdrop-blur-sm"
               disabled={isLoading}
             />
             <Button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="bg-gray-100 hover:bg-gray-200 border border-gray-300 text-black font-mono font-bold px-8 tracking-wider backdrop-blur-sm transition-all"
+              className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-white font-mono font-bold px-8 uppercase tracking-wider backdrop-blur-sm transition-all"
             >
-              Send
+              SEND
             </Button>
           </form>
         </div>
