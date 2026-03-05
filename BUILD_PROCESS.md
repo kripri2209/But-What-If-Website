@@ -114,7 +114,18 @@ Users trying to break the AI role
 Prompt injection attempts.
 
     5th March 2026
-   
+
+Changes made:
+
+Typing Animation Screen:
+Added click handler to skip the animation
+Added cursor pointer style
+Added "CLICK TO SKIP" text at the bottom
+
+Orbital Dots Screen:
+Already had click-to-skip functionality
+Updated text to "CLICK TO SKIP" (uppercase for consistency)
+
 Continued working upon edge cases:
 
 5. Logical Edge Cases
