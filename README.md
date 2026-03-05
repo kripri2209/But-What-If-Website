@@ -106,10 +106,51 @@ pnpm dev
 - Strategy and planning decisions
 
 ## Prompt Engineering
+llama-3.3-70b-versatile : Provided by Groq (via their SDK).
+This is Meta's Llama 3.3 model with 70 billion parameters, optimized for versatile reasoning tasks. Groq provides extremely fast inference speeds for this model.
 
-The system uses carefully crafted prompts that instruct GPT-4 to act as an uncompromising but respectful critic. Each prompt stage builds on previous analysis to create increasingly sophisticated challenges to the user's reasoning.
+Major Prompt Engineering Techniques:
+1. Role-Based Prompting
+Assigns clear identity: "You are DEVIL'S ADVOCATE — an intelligent contrarian advisor"
+Defines explicit purpose: "Your role is NOT to support... Your role is to stress-test"
+2. Structured Output Format
+Forces 6-section response structure:
+HIDDEN ASSUMPTIONS
+BRUTAL COUNTERARGUMENTS
+FAILURE SCENARIOS
+WHAT THE USER IS IGNORING
+HARD QUESTIONS
+FINAL VERDICT
+3. Task Decomposition
+Breaks complex "challenge thinking" task into specific sub-tasks
+Each section has clear instructions (e.g., "Identify beliefs... Explain why each assumption may be wrong")
+4. Tone Specification
+Explicit tone directive: "Sharp, analytical, skeptical, and psychologically perceptive"
+Negative examples: "Avoid motivational language"
+Clear boundary: "Your job is to challenge, not comfort"
+5. Formatting Instructions
+Bullet points (•) for every point
+Blank lines between sections
+Concise constraints (1-2 sentences max)
+ALL CAPS for section headers
+6. Context-Aware Prompting
+First message: Uses full 6-section structured prompt via runPipeline()
+Follow-ups: Shorter continuation prompt that references previous analysis
+Maintains conversation history with ...messages.map() spread
+7. Behavioral Constraints
+"Do not be polite. Be intellectually honest."
+"Approach every decision as if it could fail"
+"Ask questions that would make a confident person uncomfortable"
+8. Focus Directives
+Lists specific areas: financial, social, emotional, practical risks
+Points to: complexities, second-order consequences, long-term effects
+9. Conditional Logic
+Different prompts for initial vs follow-up messages
+Adapts based on conversation length: if (messages.length === 1)
 
-Key principles:
+This is Chain-of-Thought style prompting with strict output formatting and persona engineering.
+
+Key Principles:
 - Challenge respectfully but don't sugarcoat
 - Focus on realistic, significant risks
 - Identify implicit assumptions, not explicit ones

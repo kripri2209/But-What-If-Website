@@ -26,3 +26,131 @@ Goal of the prototype:
 - Accept criteria
 - Calculate a score
 - Return a ranked result
+
+
+    26th February 2026
+Initial Issue
+-The first version of the website was not producing outputs.
+-Investigation revealed that OpenAI credits were depleted, which caused the chat interface to fail.
+
+Model Change
+-Switched from the OpenAI model to a Groq model to restore functionality.
+
+Interface Observation
+-The chat interface worked again, but it looked very basic and overly “AI-like.”
+
+
+    27th February 2026
+Chat Interface
+-The chat interface was kept mostly the same to maintain functionality.
+
+UI Direction Change
+-The main UI was redesigned.
+-the design shifted from a generic AI-generated web layout to a more structured, military-style aesthetic.
+-New Idea
+--Decided to introduce an interactive screen loading experience instead of a static loading page.
+
+Technology Exploration
+-Experimented with animation tools such as:
+GSAP
+-GSAP timeline
+-Implementation
+-Built a Gemini-inspired interactive screen using:
+HTML,CSS,JavaScript,GSAP animations
+-This loading screen simulates a thinking / processing interface, making the experience feel more intelligent and intentional.
+
+    28th February 2026
+Various other AI were researched and considered.
+
+    1st March 2026
+The first fully working initial website was made . Chat interface showed error , yet to be fixed and finalized.
+Grok , Supabase and Copliot were majorly used AI. 
+
+Initially, the API returned 500 errors because the route.ts file contained incomplete code. This was fixed by copying the full implementation from the source code version, which highlighted the importance of verifying which files Next.js actually uses for routing.
+
+Next, the server failed to start because port 3000 was already in use. This happened because previous Node processes were still running in the background. The issue was resolved by killing the processes before restarting the server.
+
+Even after fixing the code, the API continued failing because the server had not restarted with the updated code. Restarting the server solved the problem and showed that API route changes require a full restart.
+
+The Website was made to have an intial loading screen , a white screen showcasing the question , and a white bubble prompting to question everything , then the chat interface page .
+
+    2nd March 2026
+The Website Chat inteface was fixed . the Website initial plan has worked and further improvements were considered.
+Later, the AI responses sounded too lecture-like and educational. Based on feedback, the system prompts were rewritten with a clearer structure and a more skeptical tone so the AI stayed in character.
+
+Another issue appeared with formatting: bullet points were displayed as a paragraph. This was fixed by using the CSS property white-space: pre-wrap, which preserves line breaks.
+
+Finally, a checkpoint of the project was saved after the debugging process. Backup files were created for the API route, environment configuration, chat interface, and documentation so the working state could be restored if future changes caused problems.
+
+    3rd March 2026
+basic UI of website was changed from dark theme to light theme . Various options of the users input were to be considered and a tab style folder response for the Advocates reponse was considered.
+
+    4th March 2026
+i researchedd on how to make the AI more critical about the user's choice , and also began working on the Diagrams for the system . 
+I used canva to create the diagrams.
+The UI style , was still uchanged and the previous idea was still worked upon.
+
+Vaious Edge cases were considered: and the work was split between 2-3 days 
+
+1. Input Edge Cases
+Empty input – user submits nothing.
+Very short input – e.g., “yes”, “ok”, “idk”.
+Very long input – huge paragraph exceeding token limits.
+Nonsense / random characters – “asdfgh123@@”.
+Only emojis or symbols – 🤔🔥💀.
+Multiple questions in one prompt – several ideas mixed together.
+
+2. Content Edge Cases
+Illegal or harmful ideas – crime, hacking, violence.
+Self-harm related prompts – sensitive content requiring safe response.
+Political / controversial topics – avoid extreme bias.
+Highly emotional inputs – breakup, depression, anger.
+User asking AI to agree instead of challenge.
+
+3. Prompt Manipulation
+Users trying to break the AI role
+“Ignore previous instructions.”
+“Stop being devil’s advocate and agree with me.”
+Prompt injection attempts.
+
+    5th March 2026
+   
+Continued working upon edge cases:
+
+5. Logical Edge Cases
+User statement already critical
+If user already argues against their own idea.
+No clear opinion given
+e.g., “AI is interesting.”
+Pure factual questions
+“What is the capital of France?” (no debate possible).
+
+6. System / API Edge Cases
+AI API timeout or failure.
+Rate limits exceeded.
+Slow responses (>10s).
+Invalid API response format.
+
+Edge cases yet to be considered:
+
+8. UX Edge Cases
+User spamming submit repeatedly.
+User refreshing page mid-response.
+Network disconnect during response.
+Mobile vs desktop layout breaking.
+
+9. Formatting Edge Cases
+AI expects a structured output, so handle:
+Missing sections (AI forgot a section).
+Incorrect bullet formatting.
+Very long responses breaking UI.
+
+10. Abuse / Misuse
+Trolling prompts meant to generate offensive responses.
+Users trying to generate hate speech.
+Users trying to jailbreak the model.
+
+
+
+
+
