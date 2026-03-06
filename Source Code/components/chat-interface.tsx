@@ -9,6 +9,20 @@ interface ChatMessage {
   content: string;
 }
 
+interface ChatSession {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  createdAt: number;
+}
+
+interface Option {
+  title: string;
+  description: string;
+  pros: string[];
+  cons: string[];
+}
+
 // Helper function to render text with markdown bold
 const renderMarkdown = (text: string) => {
   const parts = text.split(/(\*\*.*?\*\*)/g);
@@ -22,16 +36,22 @@ const renderMarkdown = (text: string) => {
   });
 };
 
+const getInitialMessages = (): ChatMessage[] => [
+  {
+    role: "system",
+    content:
+      "Devil's Advocate here. Tell me what you think is a good idea, and I'll tell you what you're missing.",
+  },
+];
+
 export function ChatInterface() {
-    // ...existing state declarations...
-    // (moved below)
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: "system",
-      content:
-        "SYSTEM: ENCRYPTED LINK ESTABLISHED. I AM READY TO DISSECT YOUR STRATEGY. PROVIDE YOUR CORE ASSUMPTION.",
-    },
-  ]);
+  // Chat session management
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
+  const [currentChatId, setCurrentChatId] = useState<string>("");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  
+  // Current chat state
+  const [messages, setMessages] = useState<ChatMessage[]>(getInitialMessages());
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +59,126 @@ export function ChatInterface() {
   const [showIntro, setShowIntro] = useState(true);
   const [showOrbitalDots, setShowOrbitalDots] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+  const [expandedMessages, setExpandedMessages] = useState<Set<number>>(new Set());
+  const [activeTab, setActiveTab] = useState<Map<number, string>>(new Map());
+  
+  const toggleMessageExpansion = (index: number) => {
+    setExpandedMessages(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
+  };
+  
+  const setMessageTab = (messageIndex: number, tabName: string) => {
+    setActiveTab(prev => {
+      const newMap = new Map(prev);
+      newMap.set(messageIndex, tabName);
+      return newMap;
+    });
+  };
+  
+  // Load chat sessions from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('chatSessions');
+    if (saved) {
+      const sessions: ChatSession[] = JSON.parse(saved);
+      setChatSessions(sessions);
+      if (sessions.length > 0) {
+        const lastSession = sessions[0];
+        setCurrentChatId(lastSession.id);
+        setMessages(lastSession.messages);
+      } else {
+        createNewChat();
+      }
+    } else {
+      createNewChat();
+    }
+  }, []);
+  
+  // Save current chat to localStorage whenever messages change
+  useEffect(() => {
+    if (!currentChatId || messages.length <= 1) return;
+    
+    const updatedSessions = chatSessions.map(session => 
+      session.id === currentChatId 
+        ? { 
+            ...session, 
+            messages,
+            title: generateChatTitle(messages)
+          }
+        : session
+    );
+    
+    // If current chat doesn't exist yet, add it
+    if (!chatSessions.find(s => s.id === currentChatId)) {
+      updatedSessions.unshift({
+        id: currentChatId,
+        title: generateChatTitle(messages),
+        messages,
+        createdAt: Date.now()
+      });
+    }
+    
+    setChatSessions(updatedSessions);
+    localStorage.setItem('chatSessions', JSON.stringify(updatedSessions));
+  }, [messages, currentChatId]);
+  
+  const generateChatTitle = (msgs: ChatMessage[]): string => {
+    const userMsg = msgs.find(m => m.role === 'user');
+    if (userMsg) {
+      return userMsg.content.slice(0, 40) + (userMsg.content.length > 40 ? '...' : '');
+    }
+    return 'New Chat';
+  };
+  
+  const createNewChat = () => {
+    const newId = Date.now().toString();
+    const newSession: ChatSession = {
+      id: newId,
+      title: 'New Chat',
+      messages: getInitialMessages(),
+      createdAt: Date.now()
+    };
+    
+    setChatSessions(prev => [newSession, ...prev]);
+    setCurrentChatId(newId);
+    setMessages(getInitialMessages());
+    setInput('');
+    setError(null);
+    setExpandedMessages(new Set());
+    setActiveTab(new Map());
+  };
+  
+  const switchChat = (chatId: string) => {
+    const session = chatSessions.find(s => s.id === chatId);
+    if (session) {
+      setCurrentChatId(chatId);
+      setMessages(session.messages);
+      setInput('');
+      setError(null);
+      setExpandedMessages(new Set());
+      setActiveTab(new Map());
+    }
+  };
+  
+  const deleteChat = (chatId: string) => {
+    const updated = chatSessions.filter(s => s.id !== chatId);
+    setChatSessions(updated);
+    localStorage.setItem('chatSessions', JSON.stringify(updated));
+    
+    if (chatId === currentChatId) {
+      if (updated.length > 0) {
+        switchChat(updated[0].id);
+      } else {
+        createNewChat();
+      }
+    }
+  };
   
   // Constants for validation
   const MAX_INPUT_LENGTH = 2000;
@@ -270,6 +410,10 @@ export function ChatInterface() {
       <>
         <div
           id="typing-body"
+          onClick={() => {
+            setShowIntro(false);
+            setShowOrbitalDots(false);
+          }}
           style={{
             margin: 0,
             padding: 0,
@@ -277,20 +421,21 @@ export function ChatInterface() {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            backgroundColor: "white",
-            color: "black",
+            background: "#ffffff",
+            color: "#1f2937",
             fontFamily:
               "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
             fontSize: "13px",
             letterSpacing: "0.35em",
             fontWeight: 300,
             overflow: "hidden",
-            transition: "background-color 2s ease",
+            transition: "opacity 2s ease",
             position: "fixed",
             top: 0,
             left: 0,
             width: "100%",
             zIndex: 9999,
+            cursor: "pointer",
           }}
         >
           <div id="text-container" style={{ display: "flex", alignItems: "center" }}>
@@ -302,11 +447,28 @@ export function ChatInterface() {
                 display: "inline-block",
                 width: "2px",
                 height: "1.5em",
-                backgroundColor: "black",
+                backgroundColor: "#1f2937",
                 marginLeft: "5px",
                 animation: "blink 1s infinite",
               }}
             ></span>
+          </div>
+          <div style={{
+            position: "absolute",
+            bottom: "3rem",
+            left: "50%",
+            transform: "translateX(-50%)",
+          }}>
+            <p style={{
+              color: "#9ca3af",
+              fontSize: "12px",
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+              fontWeight: 300,
+            }}>
+              Click to skip
+            </p>
           </div>
         </div>
         <style jsx global>{`
@@ -316,7 +478,8 @@ export function ChatInterface() {
             }
           }
           .black-screen {
-            background-color: black !important;
+            background: #ffffff !important;
+            opacity: 0.3 !important;
           }
         `}</style>
       </>
@@ -326,8 +489,12 @@ export function ChatInterface() {
   if (showOrbitalDots) {
     return (
       <div
-        className="fixed inset-0 bg-white flex items-center justify-center cursor-pointer overflow-hidden z-[9999]"
-        onClick={() => setShowOrbitalDots(false)}
+        className="fixed inset-0 flex items-center justify-center cursor-pointer overflow-hidden z-[9999]"
+        style={{ background: "#ffffff" }}
+        onClick={() => {
+          setShowOrbitalDots(false);
+          setShowIntro(false);
+        }}
       >
         <div className="relative w-full h-full flex items-center justify-center">
           {/* Dots Container */}
@@ -352,9 +519,9 @@ export function ChatInterface() {
                     style={{
                       width: '10px',
                       height: '10px',
-                      backgroundColor: 'white',
+                      background: '#000000',
                       borderRadius: '50%',
-                      boxShadow: '0 0 12px rgba(255,255,255,0.7), 0 0 20px rgba(255,255,255,0.3)'
+                      boxShadow: '0 0 20px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.2)'
                     }}
                   />
                 </div>
@@ -374,7 +541,7 @@ export function ChatInterface() {
             >
               <p 
                 style={{
-                  color: 'white',
+                  color: '#1f2937',
                   fontSize: '18px',
                   letterSpacing: '0.35em',
                   padding: '0 2rem',
@@ -405,7 +572,7 @@ export function ChatInterface() {
                 width: '400px',
                 height: '400px',
                 borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%)'
+                background: 'radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%)'
               }}
             />
           </div>
@@ -423,14 +590,15 @@ export function ChatInterface() {
         >
           <p 
             style={{
-              color: '#27272a',
+              color: '#94a3b8',
               fontSize: '12px',
               letterSpacing: '0.2em',
+              textTransform: 'uppercase',
               fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
               fontWeight: 300
             }}
           >
-            Click anywhere to skip
+            Click to skip
           </p>
         </div>
         {/* Animation Keyframes */}
@@ -487,84 +655,343 @@ export function ChatInterface() {
   }
 
   return (
-    <div className="relative min-h-screen bg-white text-black">
-      {/* Top minimalist status */}
-      <div className="absolute top-8 left-8 z-20">
-        <span className="text-[10px] font-mono tracking-widest text-zinc-700">v4.2</span>
-      </div>
-      <div className="absolute top-8 right-8 z-20 flex items-center gap-4">
-        <span className="text-[10px] font-mono tracking-widest text-black">ACTIVE</span>
-        {!isOnline && (
-          <span className="text-[10px] font-mono tracking-widest text-red-600 flex items-center gap-1">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-600"></span>
-            OFFLINE
-          </span>
-        )}
-      </div>
-      {/* Main Dramatic Content */}
-      <div className="flex-1 flex items-center justify-center relative">
-        {/* Dramatic content block goes here (omitted for brevity) */}
-      </div>
-      {/* Bottom warning modules */}
-      <div className="border-t border-zinc-300 py-6 bg-white/20 backdrop-blur-sm">
-        {/* Warning modules block goes here (omitted for brevity) */}
-      </div>
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30">
-        {/* Scroll indicator block goes here (omitted for brevity) */}
-      </div>
-      {/* Chat Interface Section with matching atmosphere */}
-      <div className="flex h-screen flex-col" style={{ background: "white" }}>
-        {/* Header */}
-        <div className="border-b border-zinc-300 py-3 backdrop-blur-sm bg-white/40">
-          <p className="text-xs text-zinc-700 font-mono tracking-wider text-center">
-            PROTOCOL: INTERFACE-ALPHA // CORE ENGINE: ADVOCATE V4.2 // STATUS: ACTIVE
-          </p>
-        </div>
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto py-6 space-y-8 relative">
-          <div className="max-w-5xl mx-auto px-8">
-            {messages.map((message, idx) => (
-              <div
-                key={idx}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                style={{ marginBottom: "2rem" }}
-              >
-                <div
-                  className={`max-w-3xl rounded px-5 py-3 backdrop-blur-sm ${
-                    message.role === "system"
-                      ? "bg-gray-100 border border-gray-300"
-                      : message.role === "user"
-                      ? "bg-gray-100 border border-gray-300"
-                      : "bg-gray-100 border border-gray-300"
-                  }`}
-                >
-                  <p className={`font-mono text-sm leading-relaxed tracking-wide text-gray-800 whitespace-pre-wrap`}>
-                    {renderMarkdown(message.content)}
-                  </p>
-                </div>
+    <div className="flex h-screen" style={{ background: "#ffffff", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" }}>
+      {/* Chat History Sidebar */}
+      {sidebarOpen && (
+        <div className="w-80 border-r flex flex-col" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", background: "rgba(255, 255, 255, 0.8)", backdropFilter: "blur(40px)", borderColor: "rgba(226, 232, 240, 0.8)" }}>
+          {/* Sidebar Header */}
+          <div className="border-b p-4" style={{ borderColor: "rgba(226, 232, 240, 0.8)" }}>
+            <button
+              onClick={createNewChat}
+              className="w-full text-white py-3 rounded-lg transition-all hover:opacity-90 shadow-lg"
+              style={{ background: "#000000", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300, boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)" }}
+            >
+              + NEW CHAT
+            </button>
+          </div>
+          
+          {/* Chat History List */}
+          <div className="flex-1 overflow-y-auto p-3">
+            {chatSessions.length === 0 ? (
+              <p className="text-center mt-8" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300, color: "#9ca3af" }}>No chat history</p>
+            ) : (
+              <div className="space-y-2">
+                {chatSessions.map(session => (
+                  <div
+                    key={session.id}
+                    className={`group relative rounded-lg p-3 cursor-pointer transition-all ${
+                      session.id === currentChatId
+                        ? 'border border-gray-300'
+                        : 'border hover:border-gray-600/50'
+                    }`}
+                    style={{ 
+                      background: session.id === currentChatId 
+                        ? '#f3f4f6' 
+                        : 'rgba(248, 250, 252, 0.8)',
+                      borderColor: session.id === currentChatId ? '#d1d5db' : 'rgba(226, 232, 240, 0.6)',
+                      boxShadow: session.id === currentChatId ? '0 4px 6px rgba(0, 0, 0, 0.1)' : 'none',
+                      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+                    }}
+                    onClick={() => switchChat(session.id)}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="truncate" style={{ fontSize: "11px", letterSpacing: "0.15em", fontWeight: 300, color: session.id === currentChatId ? '#000000' : '#64748b' }}>
+                          {session.title}
+                        </p>
+                        <p className="mt-1" style={{ fontSize: "10px", letterSpacing: "0.1em", fontWeight: 300, color: session.id === currentChatId ? '#4b5563' : '#94a3b8' }}>
+                          {new Date(session.createdAt).toLocaleDateString()} {new Date(session.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                        <p className="text-gray-600 mt-1" style={{ fontSize: "10px", letterSpacing: "0.1em", fontWeight: 300, color: "#94a3b8" }}>
+                          {session.messages.filter(m => m.role !== 'system').length} messages
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm('Delete this chat?')) {
+                            deleteChat(session.id);
+                          }
+                        }}
+                        className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-black transition-opacity text-sm font-bold"
+                        aria-label="Delete chat"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
+          </div>
+          
+          {/* Sidebar Footer */}
+          <div className="border-t p-3" style={{ borderColor: "rgba(226, 232, 240, 0.8)" }}>
+            <p className="text-gray-600 text-center" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "10px", letterSpacing: "0.2em", fontWeight: 300, color: "#94a3b8" }}>
+              {chatSessions.length} {chatSessions.length === 1 ? 'CHAT' : 'CHATS'} SAVED
+            </p>
+          </div>
+        </div>
+      )}
+      
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="border-b py-4" style={{ background: "rgba(255, 255, 255, 0.7)", backdropFilter: "blur(40px)", borderColor: "rgba(226, 232, 240, 0.8)" }}>
+          <div className="flex items-center justify-between px-8">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="transition-colors"
+              style={{ color: "#000000" }}
+              onMouseEnter={(e) => e.currentTarget.style.color = "#4b5563"}
+              onMouseLeave={(e) => e.currentTarget.style.color = "#000000"}
+              style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300 }}
+            >
+              {sidebarOpen ? '▶ HIDE' : '◀ HISTORY'}
+            </button>
+            <p className="text-center flex-1" style={{ 
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", 
+              fontSize: "15px", 
+              letterSpacing: "0.35em", 
+              fontWeight: 300,
+              color: "#000000"
+            }}>
+              Devil's Advocate
+            </p>
+            <div className="w-20"></div>
+          </div>
+        </div>
+        
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto py-8 space-y-8 relative">
+          <div className="max-w-5xl mx-auto px-8">
+            {messages.map((message, idx) => {
+              // Parse response for three-part format
+              const parseResponse = (content: string) => {
+                // Split by ---DETAILED---
+                const mainParts = content.split('---DETAILED---');
+                const verdict = mainParts[0]?.trim() || content;
+                const afterDetailed = mainParts[1]?.trim() || null;
+                
+                if (!afterDetailed) {
+                  return { verdict, details: null, options: [] };
+                }
+                
+                // Check if there's an ---OPTIONS--- section
+                const detailedParts = afterDetailed.split('---OPTIONS---');
+                const details = detailedParts[0]?.trim() || null;
+                const optionsText = detailedParts[1]?.trim() || null;
+                
+                // Parse options if they exist
+                const options: Option[] = [];
+                if (optionsText) {
+                  const optionBlocks = optionsText.split(/OPTION:/g).filter(block => block.trim());
+                  
+                  optionBlocks.forEach(block => {
+                    const lines = block.trim().split('\n');
+                    const titleLine = lines[0]?.trim() || '';
+                    
+                    // Find PROS and CONS sections
+                    const prosIndex = lines.findIndex(line => line.trim() === 'PROS:');
+                    const consIndex = lines.findIndex(line => line.trim() === 'CONS:');
+                    
+                    let description = '';
+                    let pros: string[] = [];
+                    let cons: string[] = [];
+                    
+                    if (prosIndex > 0) {
+                      // Description is between title and PROS
+                      description = lines.slice(1, prosIndex).join('\n').trim();
+                    } else if (consIndex > 0) {
+                      description = lines.slice(1, consIndex).join('\n').trim();
+                    } else {
+                      description = lines.slice(1).join('\n').trim();
+                    }
+                    
+                    // Extract PROS
+                    if (prosIndex !== -1) {
+                      const prosEndIndex = consIndex !== -1 ? consIndex : lines.length;
+                      pros = lines.slice(prosIndex + 1, prosEndIndex)
+                        .filter(line => line.trim().startsWith('•'))
+                        .map(line => line.trim().substring(1).trim());
+                    }
+                    
+                    // Extract CONS
+                    if (consIndex !== -1) {
+                      cons = lines.slice(consIndex + 1)
+                        .filter(line => line.trim().startsWith('•'))
+                        .map(line => line.trim().substring(1).trim());
+                    }
+                    
+                    if (titleLine) {
+                      options.push({ title: titleLine, description, pros, cons });
+                    }
+                  });
+                }
+                
+                return { verdict, details, options };
+              };
+              
+              const { verdict, details, options } = message.role === "assistant" 
+                ? parseResponse(message.content) 
+                : { verdict: message.content, details: null, options: [] };
+              const isExpanded = expandedMessages.has(idx);
+              const currentTab = activeTab.get(idx) || 'detailed';
+              
+              return (
+                <div
+                  key={idx}
+                  className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                  style={{ marginBottom: "2rem" }}
+                >
+                  <div
+                    className={`max-w-3xl rounded px-5 py-3 border ${
+                      message.role === "system"
+                        ? "border-gray-200"
+                        : message.role === "user"
+                        ? "border-gray-200"
+                        : "border-gray-200"
+                    }`}
+                    style={{
+                      background: message.role === "user" 
+                        ? "#f9fafb"
+                        : "rgba(255, 255, 255, 0.8)",
+                      backdropFilter: "blur(20px)"
+                    }}
+                  >
+                      <p className={`leading-relaxed ${message.role === "user" ? "text-gray-800" : "text-gray-800"} whitespace-pre-wrap`} style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
+                        {renderMarkdown(verdict)}
+                      </p>
+                    
+                    {/* Expandable section with tabs for options */}
+                    {(details || options.length > 0) && message.role === "assistant" && (
+                      <div className="mt-3">
+                        {/* Tab buttons */}
+                        <div className="flex flex-wrap gap-2 justify-between items-center">
+                          {/* Option tabs on the left */}
+                          <div className="flex flex-wrap gap-2">
+                            {options.map((option, optIdx) => (
+                              <button
+                                key={optIdx}
+                                onClick={() => {
+                                  if (currentTab === `option-${optIdx}` && isExpanded) {
+                                    toggleMessageExpansion(idx);
+                                  } else {
+                                    if (!isExpanded) toggleMessageExpansion(idx);
+                                    setMessageTab(idx, `option-${optIdx}`);
+                                  }
+                                }}
+                                className={`px-3 py-1 rounded border transition-all ${
+                                  currentTab === `option-${optIdx}` && isExpanded 
+                                    ? 'text-white border-black' 
+                                    : 'text-gray-600 border-gray-300 hover:border-black hover:text-gray-800'
+                                }`}
+                                style={{ 
+                                  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", 
+                                  fontSize: "11px", 
+                                  letterSpacing: "0.15em", 
+                                  fontWeight: 300,
+                                  background: currentTab === `option-${optIdx}` && isExpanded 
+                                    ? "#000000"
+                                    : "rgba(248, 250, 252, 0.8)"
+                                }}
+                              >
+                                {option.title}
+                              </button>
+                            ))}
+                          </div>
+                          
+                          {/* Explain the decision on the right */}
+                          {details && (
+                            <button
+                              onClick={() => {
+                                toggleMessageExpansion(idx);
+                                setMessageTab(idx, 'detailed');
+                              }}
+                              className={`transition-colors ${
+currentTab === 'detailed' && isExpanded ? 'underline' : 'text-gray-500 hover:text-gray-700'}`}
+                              style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300, color: currentTab === 'detailed' && isExpanded ? '#000000' : undefined }}
+                            >
+                              {isExpanded && currentTab === 'detailed' ? '▲ Hide details' : '▼ Explain the decision'}
+                            </button>
+                          )}
+                        </div>
+                        
+                        {/* Tab content */}
+                        {isExpanded && (
+                          <div className="mt-3 pt-3 border-t border-gray-200">
+                            {currentTab === 'detailed' && details && (
+                              <p className="leading-relaxed text-gray-700 whitespace-pre-wrap" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
+                                {renderMarkdown(details)}
+                              </p>
+                            )}
+                            
+                            {currentTab.startsWith('option-') && options.length > 0 && (
+                              (() => {
+                                const optionIndex = parseInt(currentTab.split('-')[1]);
+                                const option = options[optionIndex];
+                                if (!option) return null;
+                                
+                                return (
+                                  <div className="space-y-3" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
+                                    <p className="text-gray-700 leading-relaxed">
+                                      {option.description}
+                                    </p>
+                                    
+                                    {option.pros.length > 0 && (
+                                      <div>
+                                        <p className="text-black font-semibold mb-1">PROS:</p>
+                                        <ul className="list-none space-y-1">
+                                          {option.pros.map((pro, i) => (
+                                            <li key={i} className="text-gray-700">• {pro}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                    
+                                    {option.cons.length > 0 && (
+                                      <div>
+                                        <p className="text-black font-semibold mb-1">CONS:</p>
+                                        <ul className="list-none space-y-1">
+                                          {option.cons.map((con, i) => (
+                                            <li key={i} className="text-gray-700">• {con}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })()
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-100 border border-gray-300 rounded px-5 py-3 backdrop-blur-sm">
-                  <p className="font-mono text-sm text-gray-800">ADVOCATE: ANALYZING...</p>
+                <div className="border border-gray-200 rounded px-5 py-3" style={{ background: "rgba(255, 255, 255, 0.8)", backdropFilter: "blur(20px)" }}>
+                  <p className="text-gray-800" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "13px", letterSpacing: "0.35em", fontWeight: 300 }}>ADVOCATE: ANALYZING...</p>
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
         </div>
+        
         {/* Input Area */}
-        <div className="border-t border-zinc-300 py-4 bg-white/40 backdrop-blur-sm">
+        <div className="border-t py-4" style={{ background: "rgba(255, 255, 255, 0.7)", backdropFilter: "blur(40px)", borderColor: "rgba(226, 232, 240, 0.8)" }}>
           {/* Error Display */}
           {error && (
             <div className="max-w-5xl mx-auto px-8 mb-3">
-              <div className="bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded-md font-mono text-sm flex items-center justify-between">
-                <span>{error}</span>
+              <div className="border border-gray-400 text-gray-900 px-4 py-3 rounded-lg flex items-center justify-between" style={{ background: "rgba(243, 244, 246, 0.9)", backdropFilter: "blur(40px)", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}>
+                <span style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "11px", letterSpacing: "0.15em", fontWeight: 300 }}>{error}</span>
                 <button
                   onClick={() => setError(null)}
-                  className="text-red-600 hover:text-red-800 font-bold ml-4"
+                  className="text-gray-700 hover:text-black text-xl font-bold ml-4 leading-none"
                   aria-label="Dismiss error"
                 >
                   ×
@@ -572,21 +999,37 @@ export function ChatInterface() {
               </div>
             </div>
           )}
-          
           <form onSubmit={handleSubmit} className="max-w-5xl mx-auto px-8 flex gap-3">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Describe your decision or dilemma"
-              className="flex-1 bg-gray-100 border-gray-300 text-gray-800 placeholder:text-gray-400 font-mono text-sm focus:border-black focus-visible:ring-black backdrop-blur-sm"
+              className="flex-1 text-gray-900 placeholder:text-gray-400 focus:border-black focus-visible:ring-black"
+              style={{ 
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", 
+                fontSize: "13px", 
+                letterSpacing: "0.15em", 
+                fontWeight: 300,
+                background: "rgba(255, 255, 255, 0.8)",
+                backdropFilter: "blur(40px)",
+                borderColor: "rgba(226, 232, 240, 0.8)"
+              }}
               disabled={isLoading}
             />
             <Button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="bg-gray-100 hover:bg-gray-200 border border-gray-300 text-black font-mono font-bold px-8 tracking-wider backdrop-blur-sm transition-all"
+              className="text-white px-8 transition-all hover:opacity-90 border-0 shadow-lg"
+              style={{ 
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", 
+                fontSize: "11px", 
+                letterSpacing: "0.3em", 
+                fontWeight: 300,
+                background: "#000000",
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)"
+              }}
             >
-              Send
+              SEND
             </Button>
           </form>
         </div>

@@ -1,27 +1,6 @@
 import type { Metadata } from 'next'
-import { Playfair_Display, Crimson_Text, Roboto_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
-
-const playfair = Playfair_Display({ 
-  subsets: ["latin"],
-  style: ['normal', 'italic'],
-  variable: '--font-playfair',
-  display: 'swap',
-});
-
-const crimson = Crimson_Text({ 
-  subsets: ["latin"],
-  weight: ['400', '600', '700'],
-  variable: '--font-crimson',
-  display: 'swap',
-});
-
-const robotoMono = Roboto_Mono({
-  subsets: ["latin"],
-  variable: '--font-mono',
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   title: "Devils Advocate - Challenge Your Decisions",
@@ -43,8 +22,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${playfair.variable} ${crimson.variable} ${robotoMono.variable}`}> 
-      <body>
+    <html lang="en"> 
+      <body className="font-sans antialiased">
         {children}
         <Analytics />
       </body>
