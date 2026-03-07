@@ -209,7 +209,7 @@ export function ChatInterface() {
   }, []);
   
   const introQuestions = [
-    "I WANT TO QUIT",
+    "DEVILS ADVOCATE",
     "WHAT IF I'M WRONG?",
     "WHY DO I BELIEVE THIS?",
     "WHAT AM I IGNORING?",
@@ -220,7 +220,7 @@ export function ChatInterface() {
     "WHAT'S THE HIDDEN COST?",
     "WHOSE VOICE IS MISSING?"
   ];
-  const [introText, setIntroText] = useState(introQuestions[Math.floor(Math.random() * introQuestions.length)]);
+  const [introText, setIntroText] = useState("WELCOME TO DEVIL'S ADVOCATE");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
