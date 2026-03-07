@@ -4,124 +4,110 @@
 
 **Devils Advocate** is a sophisticated AI-powered decision analysis tool that helps users make better choices by challenging their assumptions, exploring worst-case scenarios, and revealing hidden complexity. It uses a proprietary 5-stage prompt pipeline to provide deep, nuanced counterarguments.
 
-## Project Status: ✅ Complete
+## Project Status: 🔄 In Progress
 
-All core features have been implemented and the application is ready for deployment.
+Core features implemented. UI refinements and flow optimization in progress.
 
 ## What Has Been Built
 
 ### 1. **Frontend** (Next.js 16 + React 19)
-- ✅ Landing page with features showcase and 5-stage pipeline visualization
+- ✅ Interactive typing intro screen showing "WELCOME TO DEVIL'S ADVOCATE"
 - ✅ Interactive chat interface with real-time streaming
-- ✅ Analytics dashboard for decision tracking
-- ✅ Responsive dark-mode design with red/orange accent colors
-- ✅ Navigation between pages (Home → Chat → Analytics)
+- ✅ Click-to-skip functionality on intro screen
+- ✅ Responsive design with modern animations
+- 🔄 Navigation system (in progress)
 
-### 2. **Backend API** (OpenAI GPT-4 via Vercel AI Gateway)
-- ✅ Multi-prompt pipeline API (`/api/chat`)
-- ✅ 5-stage analysis: Parser → Assumptions → Counterarguments → Risk Analysis → Synthesis
+### 2. **Backend API** (Groq LLaMA 3.3 70B)
+- ✅ Chat API (`/api/chat`) with Devil's Advocate prompt
+- ✅ 6-stage analysis: Hidden Assumptions → Counterarguments → Failure Scenarios → What You're Ignoring → Hard Questions → Final Verdict
 - ✅ Streaming response support for real-time feedback
 - ✅ Follow-up message handling for continued debates
 - ✅ Error handling and validation
 
-### 3. **Database** (Supabase PostgreSQL)
-- ✅ 3 main tables:
-  - `conversations` - User chat sessions
-  - `messages` - Individual messages with roles
-  - `decision_analytics` - Decision tracking with outcomes
-- ✅ Row Level Security (RLS) policies for data privacy
-- ✅ Proper indexes for performance
-- ✅ Migration scripts ready to run
+### 3. **Database** (Local Storage)
+- ✅ Chat sessions stored in browser localStorage
+- ✅ Conversation history management
+- ✅ Session persistence across page reloads
+- 🔄 Supabase integration (planned for future)
 
 ### 4. **Utilities & Infrastructure**
-- ✅ Supabase client setup (browser & server)
-- ✅ Database utility functions (`lib/supabase/db.ts`)
-- ✅ System prompt constants (`lib/constants/prompts.ts`)
-- ✅ TypeScript types (`lib/types/index.ts`)
-- ✅ Middleware for session handling
+- ✅ localStorage chat session management
+- ✅ React hooks for state management
+- ✅ TypeScript for type safety
+- ✅ Tailwind CSS for styling
 
 ### 5. **Documentation**
-- ✅ README.md - Project overview
-- ✅ QUICKSTART.md - Developer quick start guide
-- ✅ SETUP.md - Setup and configuration
-- ✅ DEPLOYMENT.md - Deployment checklist
-- ✅ ARCHITECTURE.md - Technical architecture
-- ✅ PROMPTS.md - System prompt reference
+- ✅ PROJECT_SUMMARY.md - Current project state (this file)
+- 🔄 Additional documentation as needed
 
 ## Key Features
 
-### The 5-Stage Pipeline
+### Interactive Typing Intro Screen
+- Displays "WELCOME TO DEVIL'S ADVOCATE" with typing animation
+- Click-to-skip functionality
+- Never shows again after being skipped (stored in localStorage)
+- Smooth transitions to chat interface
+
+### The 6-Stage Analysis Pipeline
 ```
-User Decision → Parser → Assumptions → Counterarguments → Risk Analysis → Synthesis → AI Response
+User Input → Hidden Assumptions → Counterarguments → Failure Scenarios → What You're Ignoring → Hard Questions → Final Verdict
 ```
 
 Each stage builds on the previous one to create a comprehensive Devil's Advocate response.
 
-### Real-Time Streaming
-- First message runs full pipeline, second+ messages use context-aware conversation
-- Responses stream character-by-character for better UX
-- Smooth animations and loading states
-
-### Data Persistence
-- Conversations saved to Supabase
-- Messages logged with analysis data
-- Decision analytics tracked for insights
-- RLS ensures user privacy
-
-### Beautiful UI
-- Dark theme with professional feel
-- Red/orange gradient accents
-- Responsive design (mobile → desktop)
-- Intuitive navigation
-- Visual indicators for analysis stages
+### Real-Time Chat Interface
+- First message runs full analysis pipeline
+- Follow-up messages use conversational context
+- **Advanced markdown rendering** with GitHub-flavored markdown support
+- **Code syntax highlighting** for code blocks
+- **Copy any message** to clipboard with hover button
+- **Retry failed messages** automatically
+- **Toast notifications** for immediate feedback
+- Error handling and validation
+- Session persistence with localStorage
+ with session management
+- **Copy message functionality** (hover over any message)
+- **Clear conversation button** in header
+- **Toast notifications** for user actions and errors
+- **Retry buttons** for failed API requests
+- **Enhanced markdown rendering** with lists, code blocks, formatting
+### UI/UX
+- Clean, minimal design
+- Smooth animations and transitions
+- Responsive layout
+- Chat history sidebar
 
 ## File Structure
 
 ```
 devils-advocate/
 ├── app/
-│   ├── api/chat/route.ts          ← Multi-prompt pipeline
-│   ├── page.tsx                   ← Landing page
-│   ├── chat/page.tsx              ← Chat interface
-│   ├── analytics/page.tsx         ← Analytics dashboard
+│   ├── api/chat/route.ts          ← Chat API with Groq
+│   ├── page.tsx                   ← Main entry (ChatInterface)
+│   ├── HomeLanding.tsx            ← Landing page component (unused)
+│   ├── OrbitalScreen.tsx          ← Orbital screen component (unused)
 │   └── layout.tsx                 ← Root layout
-├── components/
-│   ├── chat-interface.tsx         ← Main chat UI
-│   ├── landing-page.tsx           ← Landing page UI
-│   ├── analytics-dashboard.tsx    ← Analytics UI
-│   └── ui/                        ← Shadcn components
-├── lib/
-│   ├── supabase/
-│   │   ├── client.ts              ← Browser client
-│   │   ├── server.ts              ← Server client
-│   │   └── db.ts                  ← DB utilities
-│   ├── constants/prompts.ts       ← System prompts
-│   ├── types/index.ts             ← Types
-│   └── utils.ts                   ← Utilities
-├── scripts/
-│   ├── 001_create_tables.sql
-│   └── 002_create_rls_policies.sql
-├── middleware.ts                  ← Session middleware
+├── Source Code/
+│   └── components/
+│       ├── chat-interface.tsx     ← Main chat UI with typing intro
+│       └── ui/                    ← UI components
 ├── package.json                   ← Dependencies
-└── Documentation files
+└── Configuration files
 ```
 
 ## Technology Stack
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| **Frontend** | Next.js 16, React 19, Shadcn/ui, Tailwind CSS | User interface & interactions |
-| **AI** | OpenAI GPT-4, Vercel AI Gateway, AI SDK 6 | LLM processing & streaming |
-| **Database** | Supabase (PostgreSQL) | Data persistence & RLS |
-| **Auth** | Supabase Auth | User authentication |
+| **Frontend** | Next.js 16, React 19, Tailwind CSS | User interface & interactions |
+| **AI** | Groq (LLaMA 3.3 70B) | LLM processing & Devil's Advocate analysis |
+| **Storage** | Browser localStorage | Conversation persistence |
 | **Deployment** | Vercel | Production hosting |
 
 ## Environment Variables
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=         # Your Supabase project URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY=    # Supabase anonymous key
-# OpenAI key flows through Vercel AI Gateway (no setup needed)
+GROQ_API_KEY=                     # Your Groq API key for LLaMA model access
 ```
 
 ## Installation & Deployment
@@ -129,27 +115,27 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=    # Supabase anonymous key
 ### Local Development
 ```bash
 pnpm install
-cp .env.example .env.local
-# Add Supabase credentials
+# Add GROQ_API_KEY to .env.local
 pnpm dev
 ```
 
 ### Deployment to Vercel
 1. Connect GitHub repository
-2. Add environment variables in Vercel dashboard
-3. Run database migrations in Supabase
-4. Deploy: `vercel deploy --prod`
+2. Add GROQ_API_KEY in Vercel dashboard environment variables
+3. Deploy: `vercel deploy --prod`
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed steps.
 
-## What Users Get
+## What Users Experience
 
-✅ A ruthless second opinion on their decisions
+✅ Engaging typing intro animation
+✅ AI-powered Devil's Advocate analysis of their ideas
 ✅ Challenge to their hidden assumptions
-✅ Counterarguments they hadn't considered
-✅ Risk analysis and worst-case scenarios
-✅ Better understanding of decision complexity
+✅ Brutal counterarguments they hadn't considered
+✅ Failure scenario analysis
+✅ Hard questions that make them think deeper
 ✅ Ongoing conversation to refine thinking
+✅ Persistent chat history across sessions
 
 ## API Endpoint
 
@@ -169,19 +155,27 @@ curl -X POST http://localhost:3000/api/chat \
 
 ## Performance Metrics
 
-- **Landing page load**: < 2 seconds
-- **Chat response (first)**: < 5 seconds (pipeline)
-- **Chat response (follow-up)**: < 3 seconds
-- **Database queries**: < 100ms
-- **Streaming latency**: < 100ms per chunk
+Current benchmarks:
+- **Typing intro animation**: ~3-5 seconds duration
+- **Chat response (first)**: ~3-5 seconds (Groq LLaMA)
+- **Chat response (follow-up)**: ~2-4 seconds
+- **localStorage operations**: < 50ms
 
-## Security Features
+## Current Features
 
-✅ Row Level Security (RLS) on all tables
-✅ Users can only access their own data
-✅ Input validation on API endpoints
-✅ Secure session management
-✅ CORS properly configured
+✅ Interactive typing intro screen with "WELCOME TO DEVIL'S ADVOCATE"
+✅ Click-to-skip functionality  
+✅ Full chat interface with Devil's Advocate AI
+✅ 6-stage analysis pipeline
+✅ Chat history with localStorage persistence
+✅ Session management across page reloads
+✅ **Enhanced markdown rendering** with code syntax highlighting
+✅ **Copy message to clipboard** functionality
+✅ **Retry failed messages** with one click
+✅ **Clear conversation** button in header
+✅ **Toast notifications** for user feedback
+✅ **Better error handling** with detailed messages
+✅ **Loading indicators** and timeout warnings
 
 ## Next Steps / Future Enhancements
 
@@ -217,40 +211,42 @@ curl -X POST http://localhost:3000/api/chat \
    - Offline support
 
 ## Testing Checklist
-
-Before deployment, verify:
-- [ ] Landing page loads and looks good
-- [ ] Can start a new chat conversation
-- [ ] Chat API returns responses
-- [ ] Messages are saved to database
-- [ ] Can continue conversation (follow-up messages)
-- [ ] Analytics page loads
-- [ ] Mobile responsive design works
-- [ ] Error handling works (invalid input, API errors)
-- [ ] RLS policies prevent data leakage
-- [ ] All environment variables set correctly
+Intro never reappears after being dismissed
+- [x] Chat interface loads after intro
+- [x] Chat API returns Devil's Advocate responses
+- [x] Conversation history persists in localStorage
+- [x] Follow-up messages work in conversation
+- [x] **Copy message to clipboard works**
+- [x] **Markdown rendering with code highlighting**
+- [x] **Toast notifications display correctly**
+- [x] **Clear conversation button works**
+- [x] **Retry button appears on failed messages**
+- [x] Click-to-skip functionality works
+- [x] Chat interface loads after intro
+- [x] Chat API returns Devil's Advocate responses
+- [x] Conversation history persists in localStorage
+- [x] Follow-up messages work in conversation
+- [ ] Error handling for API failures
+- [ ] Mobile responsive design
+- [ ] Performance optimization
 
 ## Support & Resources
 
-- **Documentation**: See QUICKSTART.md, SETUP.md, DEPLOYMENT.md
-- **Architecture**: See ARCHITECTURE.md
-- **Prompts**: See PROMPTS.md
+- **Current Documentation**: This PROJECT_SUMMARY.md file
 - **Dependencies**: Check package.json
-- **Issues**: Check browser console and Vercel logs
+- **Issues**: Check browser console for errors
 
 ## Credits
 
 Built with:
-- Vercel AI SDK for streaming
-- Supabase for database & auth
-- OpenAI GPT-4 for intelligence
-- Shadcn/ui for components
+- Groq LLaMA 3.3 70B for AI analysis
+- Next.js 16 & React 19
 - Tailwind CSS for styling
 
 ---
 
-**Status**: ✅ Ready for deployment
+**Status**: 🔄 In Progress
 
-**Next Action**: See DEPLOYMENT.md for production setup
+**Current State**: Interactive typing intro screen + Chat interface with Devil's Advocate AI
 
-**Questions?** Check QUICKSTART.md or ARCHITECTURE.md
+**Next Action**: Continue UI/UX refinements and feature additions

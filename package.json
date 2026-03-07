@@ -1,5 +1,5 @@
 {
-  "name": "my-project",
+  "name": "devils-advocate",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -41,6 +41,7 @@
     "@radix-ui/react-tooltip": "1.2.8",
     "@supabase/ssr": "^0.5.0",
     "@supabase/supabase-js": "^2.47.0",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "@vercel/analytics": "1.6.1",
     "ai": "^4.0.0",
     "autoprefixer": "^10.4.20",
@@ -60,8 +61,11 @@
     "react-day-picker": "9.13.2",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.54.1",
+    "react-markdown": "^10.1.0",
     "react-resizable-panels": "^2.1.7",
+    "react-syntax-highlighter": "^16.1.1",
     "recharts": "2.15.0",
+    "remark-gfm": "^4.0.1",
     "sonner": "^1.7.1",
     "tailwind-merge": "^3.3.1",
     "vaul": "^1.1.2",

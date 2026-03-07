@@ -3,6 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface ChatMessage {
   role: "user" | "assistant" | "system";
@@ -23,17 +28,43 @@ interface Option {
   cons: string[];
 }
 
-// Helper function to render text with markdown bold
-const renderMarkdown = (text: string) => {
-  const parts = text.split(/(\*\*.*?\*\*)/g);
-  
-  return parts.map((part, index) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      const boldText = part.slice(2, -2);
-      return <strong key={index} className="font-bold">{boldText}</strong>;
-    }
-    return <span key={index}>{part}</span>;
-  });
+// Enhanced markdown rendering component
+const MarkdownRenderer = ({ content }: { content: string }) => {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        code({ node, inline, className, children, ...props }: any) {
+          const match = /language-(\w+)/.exec(className || '');
+          return !inline && match ? (
+            <SyntaxHighlighter
+              style={vscDarkPlus}
+              language={match[1]}
+              PreTag="div"
+              {...props}
+            >
+              {String(children).replace(/\n$/, '')}
+            </SyntaxHighlighter>
+          ) : (
+            <code className="bg-gray-100 px-1 rounded text-sm" {...props}>
+              {children}
+            </code>
+          );
+        },
+        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+        ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+        ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+        li: ({ children }) => <li className="ml-2">{children}</li>,
+        strong: ({ children }) => <strong className="font-bold text-black">{children}</strong>,
+        em: ({ children }) => <em className="italic">{children}</em>,
+        blockquote: ({ children }) => (
+          <blockquote className="border-l-4 border-gray-300 pl-4 italic my-2">{children}</blockquote>
+        ),
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
 };
 
 const getInitialMessages = (): ChatMessage[] => [
@@ -44,11 +75,12 @@ const getInitialMessages = (): ChatMessage[] => [
   },
 ];
 
-export function ChatInterface() {
+export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly?: boolean, onSkip?: () => void }) {
   // Chat session management
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string>("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const { toast } = useToast();
   
   // Current chat state
   const [messages, setMessages] = useState<ChatMessage[]>(getInitialMessages());
@@ -56,7 +88,8 @@ export function ChatInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
-  const [showIntro, setShowIntro] = useState(true);
+  const [retryMessageIndex, setRetryMessageIndex] = useState<number | null>(null);
+  const [showIntro, setShowIntro] = useState(false);
   const [showOrbitalDots, setShowOrbitalDots] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [expandedMessages, setExpandedMessages] = useState<Set<number>>(new Set());
@@ -180,6 +213,146 @@ export function ChatInterface() {
     }
   };
   
+  // Copy message to clipboard
+  const copyMessage = async (content: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      toast({
+        title: "Copied to clipboard",
+        description: "Message copied successfully",
+      });
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  // Clear current conversation
+  const clearConversation = () => {
+    if (confirm('Clear this conversation? This cannot be undone.')) {
+      setMessages(getInitialMessages());
+      setInput('');
+      setError(null);
+      setExpandedMessages(new Set());
+      setActiveTab(new Map());
+      toast({
+        title: "Conversation cleared",
+        description: "Starting fresh",
+      });
+    }
+  };
+  
+  // Retry a failed message
+  const retryMessage = async (messageIndex: number) => {
+    const userMessage = messages[messageIndex];
+    if (!userMessage || userMessage.role !== 'user') return;
+    
+    // Remove failed assistant response if present
+    const truncatedMessages = messages.slice(0, messageIndex + 1);
+    setMessages(truncatedMessages);
+    setRetryMessageIndex(messageIndex);
+    
+    // Re-submit
+    await submitMessage(userMessage.content, truncatedMessages);
+  };
+  
+  // Extracted submission logic for reuse
+  const submitMessage = async (userContent: string, existingMessages?: ChatMessage[]) => {
+    const messagesToSend = existingMessages || [...messages, { role: "user" as const, content: userContent }];
+    if (!existingMessages) {
+      setMessages(messagesToSend);
+    }
+    
+    setIsLoading(true);
+    const timeoutId = setTimeout(() => {
+      if (isLoading) {
+        toast({
+          title: "Taking longer than expected",
+          description: "The server might be busy. Please wait...",
+        });
+      }
+    }, 15000);
+    
+    try {
+      const controller = new AbortController();
+      const requestTimeout = setTimeout(() => controller.abort(), 30000);
+      
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: messagesToSend.filter((m) => m.role !== "system").map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+        signal: controller.signal,
+      });
+      
+      clearTimeout(requestTimeout);
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        if (response.status === 429) {
+          throw new Error(data.error || 'Too many requests. Please wait a moment.');
+        } else if (response.status === 400) {
+          throw new Error(data.error || 'Invalid input. Please try rephrasing.');
+        } else if (response.status === 503) {
+          throw new Error(data.error || 'Service temporarily unavailable. Please try again.');
+        } else {
+          throw new Error(data.error || `Request failed with status ${response.status}`);
+        }
+      }
+      
+      const assistantMessage = data?.text || "No response received.";
+      
+      setMessages([
+        ...messagesToSend,
+        {
+          role: "assistant",
+          content: assistantMessage,
+        },
+      ]);
+      setError(null);
+      setRetryMessageIndex(null);
+    } catch (err: any) {
+      console.error("Chat error:", err);
+      
+      let errorMessage = "Unable to get response. Please try again.";
+      
+      if (err.name === 'AbortError') {
+        errorMessage = "Request timed out. Please try a shorter message or check your connection.";
+      } else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+        errorMessage = "Network error. Please check your internet connection.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setMessages([
+        ...messagesToSend,
+        {
+          role: "assistant",
+          content: `**System Error:**\n\n${errorMessage}\n\nPlease try again or refresh the page if the problem persists.`,
+        },
+      ]);
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      clearTimeout(timeoutId);
+      setIsLoading(false);
+    }
+  };
+  
   // Constants for validation
   const MAX_INPUT_LENGTH = 2000;
   const MIN_SUBMIT_INTERVAL = 2000; // 2 seconds between submissions
@@ -222,6 +395,14 @@ export function ChatInterface() {
   ];
   const [introText, setIntroText] = useState("WELCOME TO DEVIL'S ADVOCATE");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Check if intro should be shown (after mount to avoid hydration issues)
+  useEffect(() => {
+    const introSeen = localStorage.getItem('introSeen');
+    if (introSeen !== 'true') {
+      setShowIntro(true);
+    }
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -284,7 +465,11 @@ export function ChatInterface() {
     // Prevent spam submissions
     const now = Date.now();
     if (now - lastSubmitTime < MIN_SUBMIT_INTERVAL) {
-      setError('Please wait a moment before sending another message.');
+      toast({
+        title: "Please wait",
+        description: "Wait a moment before sending another message",
+        variant: "destructive",
+      });
       return;
     }
     
@@ -297,112 +482,48 @@ export function ChatInterface() {
     
     // Length validation
     if (userMessage.length > MAX_INPUT_LENGTH) {
-      setError(`Message too long. Please keep it under ${MAX_INPUT_LENGTH} characters.`);
+      toast({
+        title: "Message too long",
+        description: `Please keep it under ${MAX_INPUT_LENGTH} characters`,
+        variant: "destructive",
+      });
       return;
     }
     
     if (userMessage.length < 3) {
-      setError('Message too short. Please provide more context.');
+      toast({
+        title: "Message too short",
+        description: "Please provide more context",
+        variant: "destructive",
+      });
       return;
     }
     
     // Check for only emojis/symbols
     const hasText = /[a-zA-Z0-9]/.test(userMessage);
     if (!hasText) {
-      setError('Please include actual text, not just symbols or emojis.');
+      toast({
+        title: "Invalid message",
+        description: "Please include actual text, not just symbols or emojis",
+        variant: "destructive",
+      });
       return;
     }
     
     // Check network status
     if (!isOnline) {
-      setError('You are offline. Please check your internet connection.');
+      toast({
+        title: "No internet connection",
+        description: "Please check your connection and try again",
+        variant: "destructive",
+      });
       return;
     }
     
     setInput("");
-    setIsLoading(true);
     setLastSubmitTime(now);
     
-    const newMessages: ChatMessage[] = [...messages, { role: "user", content: userMessage }];
-    setMessages(newMessages);
-    
-    // Set timeout for slow responses
-    const timeoutId = setTimeout(() => {
-      if (isLoading) {
-        setError('Response is taking longer than expected. The server might be busy.');
-      }
-    }, 15000); // 15 second warning
-    
-    try {
-      const controller = new AbortController();
-      const requestTimeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
-      
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: newMessages.filter((m) => m.role !== "system").map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
-        signal: controller.signal,
-      });
-      
-      clearTimeout(requestTimeout);
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        // Handle specific error status codes
-        if (response.status === 429) {
-          throw new Error(data.error || 'Too many requests. Please wait a moment.');
-        } else if (response.status === 400) {
-          throw new Error(data.error || 'Invalid input. Please try rephrasing.');
-        } else if (response.status === 503) {
-          throw new Error(data.error || 'Service temporarily unavailable. Please try again.');
-        } else {
-          throw new Error(data.error || `Request failed with status ${response.status}`);
-        }
-      }
-      
-      const assistantMessage = data?.text || "No response received.";
-      
-      setMessages([
-        ...newMessages,
-        {
-          role: "assistant",
-          content: assistantMessage,
-        },
-      ]);
-      setError(null);
-    } catch (err: any) {
-      console.error("Chat error:", err);
-      
-      let errorMessage = "Unable to get response. Please try again.";
-      
-      if (err.name === 'AbortError') {
-        errorMessage = "Request timed out. Please try a shorter message or check your connection.";
-      } else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-        errorMessage = "Network error. Please check your internet connection.";
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      
-      setMessages([
-        ...newMessages,
-        {
-          role: "assistant",
-          content: `**System Error:**\n\n${errorMessage}\n\nPlease try again or refresh the page if the problem persists.`,
-        },
-      ]);
-      setError(errorMessage);
-    } finally {
-      clearTimeout(timeoutId);
-      setIsLoading(false);
-    }
+    await submitMessage(userMessage);
   };
 
   if (showIntro) {
@@ -411,8 +532,14 @@ export function ChatInterface() {
         <div
           id="typing-body"
           onClick={() => {
-            setShowIntro(false);
-            setShowOrbitalDots(false);
+            if (onSkip) {
+              onSkip();
+            } else {
+              // Mark intro as seen so it never shows again
+              localStorage.setItem('introSeen', 'true');
+              setShowIntro(false);
+              setShowOrbitalDots(false);
+            }
           }}
           style={{
             margin: 0,
@@ -492,6 +619,8 @@ export function ChatInterface() {
         className="fixed inset-0 flex items-center justify-center cursor-pointer overflow-hidden z-[9999]"
         style={{ background: "#ffffff" }}
         onClick={() => {
+          // Mark intro as seen so it never shows again
+          localStorage.setItem('introSeen', 'true');
           setShowOrbitalDots(false);
           setShowIntro(false);
         }}
@@ -742,10 +871,9 @@ export function ChatInterface() {
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="transition-colors"
-              style={{ color: "#000000" }}
+              style={{ color: "#000000", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300 }}
               onMouseEnter={(e) => e.currentTarget.style.color = "#4b5563"}
               onMouseLeave={(e) => e.currentTarget.style.color = "#000000"}
-              style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300 }}
             >
               {sidebarOpen ? '▶ HIDE' : '◀ HISTORY'}
             </button>
@@ -758,7 +886,14 @@ export function ChatInterface() {
             }}>
               Devil's Advocate
             </p>
-            <div className="w-20"></div>
+            <button
+              onClick={clearConversation}
+              className="transition-colors hover:text-red-600"
+              style={{ color: "#6b7280", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300 }}
+              title="Clear conversation"
+            >
+              🗑 CLEAR
+            </button>
           </div>
         </div>
         
@@ -812,20 +947,51 @@ export function ChatInterface() {
                     if (prosIndex !== -1) {
                       const prosEndIndex = consIndex !== -1 ? consIndex : lines.length;
                       pros = lines.slice(prosIndex + 1, prosEndIndex)
-                        .filter(line => line.trim().startsWith('•'))
-                        .map(line => line.trim().substring(1).trim());
+                        .filter(line => {
+                          const trimmed = line.trim();
+                          return trimmed.startsWith('•') || trimmed.startsWith('â¢') || trimmed.startsWith('-') || trimmed.startsWith('*');
+                        })
+                        .map(line => {
+                          let text = line.trim();
+                          // Remove various bullet characters
+                          if (text.startsWith('•')) text = text.substring(1);
+                          else if (text.startsWith('â¢')) text = text.substring(2); // mojibake encoding
+                          else if (text.startsWith('-')) text = text.substring(1);
+                          else if (text.startsWith('*')) text = text.substring(1);
+                          return text.trim();
+                        });
                     }
                     
                     // Extract CONS
                     if (consIndex !== -1) {
                       cons = lines.slice(consIndex + 1)
-                        .filter(line => line.trim().startsWith('•'))
-                        .map(line => line.trim().substring(1).trim());
+                        .filter(line => {
+                          const trimmed = line.trim();
+                          return trimmed.startsWith('•') || trimmed.startsWith('â¢') || trimmed.startsWith('-') || trimmed.startsWith('*');
+                        })
+                        .map(line => {
+                          let text = line.trim();
+                          // Remove various bullet characters
+                          if (text.startsWith('•')) text = text.substring(1);
+                          else if (text.startsWith('â¢')) text = text.substring(2); // mojibake encoding
+                          else if (text.startsWith('-')) text = text.substring(1);
+                          else if (text.startsWith('*')) text = text.substring(1);
+                          return text.trim();
+                        });
                     }
                     
                     if (titleLine) {
                       options.push({ title: titleLine, description, pros, cons });
                     }
+                  });
+                }
+                
+                // Debug logging
+                if (process.env.NODE_ENV === 'development') {
+                  console.log('Parsed response:', { 
+                    hasDetails: !!details, 
+                    optionsCount: options.length,
+                    options: options.map(o => ({ title: o.title, prosCount: o.pros.length, consCount: o.cons.length }))
                   });
                 }
                 
@@ -851,7 +1017,7 @@ export function ChatInterface() {
                         : message.role === "user"
                         ? "border-gray-200"
                         : "border-gray-200"
-                    }`}
+                    } relative group`}
                     style={{
                       background: message.role === "user" 
                         ? "#f9fafb"
@@ -859,9 +1025,42 @@ export function ChatInterface() {
                       backdropFilter: "blur(20px)"
                     }}
                   >
-                      <p className={`leading-relaxed ${message.role === "user" ? "text-gray-800" : "text-gray-800"} whitespace-pre-wrap`} style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
-                        {renderMarkdown(verdict)}
-                      </p>
+                    {/* Copy button for all messages */}
+                    <button
+                      onClick={() => copyMessage(message.content)}
+                      className="absolute top-2 right-2 transition-all px-1 py-0.5 rounded text-xs bg-gray-100 hover:bg-gray-200 border border-gray-300"
+                      style={{ 
+                        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
+                        fontSize: "8px",
+                        letterSpacing: "0.03em",
+                        color: "#374151"
+                      }}
+                      title="Copy message"
+                    >
+                      📋
+                    </button>
+                    
+                    {/* Retry button for user messages that have an error response */}
+                    {message.role === "user" && idx < messages.length - 1 && 
+                     messages[idx + 1]?.content.includes("**System Error:**") && (
+                      <button
+                        onClick={() => retryMessage(idx)}
+                        className="absolute top-2 right-10 transition-all px-1 py-0.5 rounded text-xs bg-red-50 hover:bg-red-100 border border-red-300"
+                        style={{ 
+                          fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
+                          fontSize: "8px",
+                          letterSpacing: "0.03em",
+                          color: "#dc2626"
+                        }}
+                        title="Retry this message"
+                      >
+                        🔄
+                      </button>
+                    )}
+                    
+                    <div className={`leading-relaxed ${message.role === "user" ? "text-gray-800" : "text-gray-800"}`} style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
+                      <MarkdownRenderer content={verdict} />
+                    </div>
                     
                     {/* Expandable section with tabs for options */}
                     {(details || options.length > 0) && message.role === "assistant" && (
@@ -921,9 +1120,9 @@ currentTab === 'detailed' && isExpanded ? 'underline' : 'text-gray-500 hover:tex
                         {isExpanded && (
                           <div className="mt-3 pt-3 border-t border-gray-200">
                             {currentTab === 'detailed' && details && (
-                              <p className="leading-relaxed text-gray-700 whitespace-pre-wrap" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
-                                {renderMarkdown(details)}
-                              </p>
+                              <div className="leading-relaxed text-gray-700" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
+                                <MarkdownRenderer content={details} />
+                              </div>
                             )}
                             
                             {currentTab.startsWith('option-') && options.length > 0 && (
