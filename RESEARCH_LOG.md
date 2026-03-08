@@ -223,6 +223,19 @@ Challenge the user’s thinking aggressively but intelligently.
 
 ## 6 March 2026
 
+**(Copilot)**
+1. Fix: Multi-stage pipeline defined in constants is not being used.
+2. Implement Mixture of Experts + Chain-of-Thought reasoning.
+3. Display AI reasoning alongside the decision explanation.
+4. Make reasoning tabs appear for all messages.
+5. Add a list of suggested prompts users can try.
+6. Prevent users from accessing the website before the intro screen.
+7. Add a Home button for easier navigation.
+8. Match chat font styling with the homepage.
+9. Update the initial chat message.
+10. Style the HOME and CLEAR buttons.
+11. Remove icons from buttons.
+
 **(ChatGPT)**
 1. “How can I convert my website UI to a pure black-and-white (monochrome) theme?”
 2. “How do I remove all gradients, colored text, and colored borders from my UI?”
@@ -232,7 +245,7 @@ Challenge the user’s thinking aggressively but intelligently.
 6. “How do I fix session card borders, delete button styling, and error message colors to match the monochrome UI?”
 7. “What are the various edge cases I must consider for my Devil’s Advocate website?”
 8. “If my Devil’s Advocate gives responses like this, what changes would you prefer to see as a user?”
->>>>>>> Stashed changes
+
 
 ## **7 March 2026**
 
