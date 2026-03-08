@@ -9,10 +9,12 @@ import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { LandingPageNew } from './landing-page-new';
+import { WeightedCriteriaDialog, WeightedCriterion } from './weighted-criteria-dialog';
 
 interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
+  weights?: WeightedCriterion[];
 }
 
 interface ChatSession {
@@ -96,6 +98,9 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
   const [isInitialized, setIsInitialized] = useState(false);
   const [expandedMessages, setExpandedMessages] = useState<Set<number>>(new Set());
   const [activeTab, setActiveTab] = useState<Map<number, string>>(new Map());
+  const [weightsDialogOpen, setWeightsDialogOpen] = useState(false);
+  const [currentWeights, setCurrentWeights] = useState<WeightedCriterion[]>([]);
+  const [expandedVerdicts, setExpandedVerdicts] = useState<Set<number>>(new Set());
   
   const toggleMessageExpansion = (index: number) => {
     setExpandedMessages(prev => {
@@ -186,6 +191,7 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
     setInput('');
     setError(null);
     setExpandedMessages(new Set());
+    setExpandedVerdicts(new Set());
     setActiveTab(new Map());
   };
   
@@ -197,6 +203,7 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
       setInput('');
       setError(null);
       setExpandedMessages(new Set());
+      setExpandedVerdicts(new Set());
       setActiveTab(new Map());
     }
   };
@@ -238,6 +245,7 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
       setInput('');
       setError(null);
       setExpandedMessages(new Set());
+      setExpandedVerdicts(new Set());
       setActiveTab(new Map());
       toast({
         title: "Conversation cleared",
@@ -291,6 +299,7 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
             role: m.role,
             content: m.content,
           })),
+          weights: currentWeights.length > 0 ? currentWeights : undefined,
         }),
         signal: controller.signal,
       });
@@ -848,13 +857,26 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
                 const afterDetailed = mainParts[1]?.trim() || null;
                 
                 if (!afterDetailed) {
-                  return { verdict, reasoning, details: null, options: [] };
+                  return { verdict, reasoning, details: null, options: [], rankedRecommendations: null };
                 }
                 
                 // Check if there's an ---OPTIONS--- section
                 const detailedParts = afterDetailed.split('---OPTIONS---');
                 const details = detailedParts[0]?.trim() || null;
-                const optionsText = detailedParts[1]?.trim() || null;
+                const afterOptions = detailedParts[1]?.trim() || null;
+                
+                // Check if there's a ---RANKED RECOMMENDATIONS--- section
+                let optionsText = null;
+                let rankedRecommendations = null;
+                if (afterOptions) {
+                  if (afterOptions.includes('---RANKED RECOMMENDATIONS---')) {
+                    const rankParts = afterOptions.split('---RANKED RECOMMENDATIONS---');
+                    optionsText = rankParts[0]?.trim() || null;
+                    rankedRecommendations = rankParts[1]?.trim() || null;
+                  } else {
+                    optionsText = afterOptions;
+                  }
+                }
                 
                 // Parse options if they exist
                 const options: Option[] = [];
@@ -931,16 +953,17 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
                     hasReasoning: !!reasoning,
                     hasDetails: !!details, 
                     optionsCount: options.length,
+                    hasRankedRecommendations: !!rankedRecommendations,
                     options: options.map(o => ({ title: o.title, prosCount: o.pros.length, consCount: o.cons.length }))
                   });
                 }
                 
-                return { verdict, reasoning, details, options };
+                return { verdict, reasoning, details, options, rankedRecommendations };
               };
               
-              const { verdict, reasoning, details, options } = message.role === "assistant" 
+              const { verdict, reasoning, details, options, rankedRecommendations } = message.role === "assistant" 
                 ? parseResponse(message.content) 
-                : { verdict: message.content, reasoning: null, details: null, options: [] };
+                : { verdict: message.content, reasoning: null, details: null, options: [], rankedRecommendations: null };
               const isExpanded = expandedMessages.has(idx);
               const currentTab = activeTab.get(idx) || 'detailed';
               
@@ -965,8 +988,55 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
                       backdropFilter: "blur(20px)"
                     }}
                   >
+                    {/* Verdict with Read More functionality */}
                     <div className={`leading-relaxed ${message.role === "user" ? "text-white" : "text-white"}`} style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
-                      <MarkdownRenderer content={verdict} />
+                      {(() => {
+                        const maxLength = 300;
+                        const isVerdictExpanded = expandedVerdicts.has(idx);
+                        const shouldTruncate = verdict.length > maxLength && !isVerdictExpanded;
+                        const displayVerdict = shouldTruncate 
+                          ? verdict.substring(0, maxLength) + '...' 
+                          : verdict;
+                        
+                        return (
+                          <>
+                            <MarkdownRenderer content={displayVerdict} />
+                            {verdict.length > maxLength && (
+                              <button
+                                onClick={() => {
+                                  setExpandedVerdicts(prev => {
+                                    const newSet = new Set(prev);
+                                    if (isVerdictExpanded) {
+                                      newSet.delete(idx);
+                                    } else {
+                                      newSet.add(idx);
+                                    }
+                                    return newSet;
+                                  });
+                                }}
+                                className="text-blue-400 hover:text-blue-300 text-xs mt-2 inline-flex items-center gap-1 transition-colors"
+                                style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", letterSpacing: "0.1em" }}
+                              >
+                                {isVerdictExpanded ? (
+                                  <>
+                                    <span>Show less</span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <polyline points="18 15 12 9 6 15"></polyline>
+                                    </svg>
+                                  </>
+                                ) : (
+                                  <>
+                                    <span>Read more</span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                     
                     {/* Expandable section with tabs for options */}
@@ -1014,7 +1084,7 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
                             {currentTab === 'reasoning' && reasoning && (
                               <div className="leading-relaxed text-gray-300" style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
                                 <div className="mb-2 text-blue-400 font-semibold uppercase tracking-wide text-xs">
-                                  How AI Evaluated This
+                                  How the AI Evaluated the Decision
                                 </div>
                                 <MarkdownRenderer content={reasoning} />
                               </div>
@@ -1068,6 +1138,15 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
                       </div>
                     )}
                     
+                    {/* Ranked Recommendations Section */}
+                    {rankedRecommendations && message.role === "assistant" && (
+                      <div className="mt-4 pt-4 border-t border-gray-700">
+                        <div className="prose prose-invert max-w-none text-gray-100" style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
+                          <MarkdownRenderer content={rankedRecommendations} />
+                        </div>
+                      </div>
+                    )}
+                    
                     {/* Action buttons at bottom - show on hover - hide for first system message */}
                     {!(message.role === "system" && idx === 0) && (
                       <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-800 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1081,6 +1160,24 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                           </svg>
                         </button>
+                        
+                        {/* Set Weights button - only for user messages */}
+                        {message.role === "user" && (
+                          <button
+                            onClick={() => setWeightsDialogOpen(true)}
+                            className="flex items-center gap-1 text-gray-400 hover:text-blue-400 transition-colors p-1 rounded hover:bg-gray-700"
+                            title="Set decision criteria weights"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="12" y1="20" x2="12" y2="10"></line>
+                              <line x1="18" y1="20" x2="18" y2="4"></line>
+                              <line x1="6" y1="20" x2="6" y2="16"></line>
+                            </svg>
+                            {currentWeights.length > 0 && (
+                              <span className="text-xs text-blue-400">({currentWeights.length})</span>
+                            )}
+                          </button>
+                        )}
                         
                         {/* Explain the decision button */}
                         {details && (
@@ -1164,6 +1261,48 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
               </div>
             </div>
           )}
+          
+          {/* Weighted Criteria Display */}
+          {currentWeights.length > 0 && (
+            <div className="max-w-5xl mx-auto px-8 mb-3">
+              <div className="border border-blue-800/50 bg-blue-950/20 px-4 py-3 rounded-lg" style={{ backdropFilter: "blur(40px)" }}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-blue-400 text-xs font-semibold" style={{ letterSpacing: "0.1em" }}>
+                    ACTIVE CRITERIA WEIGHTS
+                  </span>
+                  <button
+                    onClick={() => setCurrentWeights([])}
+                    className="text-gray-400 hover:text-red-400 transition-colors text-xs"
+                    title="Clear all weights"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {currentWeights.map((criterion, idx) => (
+                    <div
+                      key={idx}
+                      className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-gray-800/50 border border-gray-700"
+                    >
+                      <span className="text-gray-300 text-xs">{criterion.name}</span>
+                      <div className="flex items-center gap-0.5">
+                        {[...Array(10)].map((_, i) => (
+                          <div
+                            key={i}
+                            className={`w-1 h-3 rounded-sm ${
+                              i < criterion.weight ? 'bg-blue-500' : 'bg-gray-700'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-blue-400 text-xs font-semibold ml-0.5">{criterion.weight}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="max-w-5xl mx-auto px-8 flex gap-3">
             <Input
               value={input}
@@ -1171,6 +1310,26 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
               placeholder="Describe your decision or dilemma"
               className="flex-1 text-white placeholder:text-gray-500 focus:border-purple-500 focus-visible:ring-purple-500"
             />
+            
+            {/* Set Weights Button */}
+            <button
+              type="button"
+              onClick={() => setWeightsDialogOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded border border-gray-700 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-blue-400 transition-all"
+              title="Set decision criteria weights"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="20" x2="12" y2="10"></line>
+                <line x1="18" y1="20" x2="18" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="16"></line>
+              </svg>
+              {currentWeights.length > 0 && (
+                <span className="text-xs font-semibold text-blue-400">
+                  {currentWeights.length}
+                </span>
+              )}
+            </button>
+            
             <Button
               type="submit"
               disabled={isLoading || !input.trim()}
@@ -1182,6 +1341,14 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
           </form>
         </div>
       </div>
+      
+      {/* Weighted Criteria Dialog */}
+      <WeightedCriteriaDialog
+        open={weightsDialogOpen}
+        onOpenChange={setWeightsDialogOpen}
+        onSave={setCurrentWeights}
+        initialCriteria={currentWeights}
+      />
     </div>
   );
 }

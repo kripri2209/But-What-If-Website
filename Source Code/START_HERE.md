@@ -4,14 +4,9 @@ Welcome to **But, What If...** - an AI-powered decision analysis chatbot that ch
 
 ## ✨ What Is This?
 
-A full-stack web application that helps users make better decisions by acting as a critical thinking advisor through an advanced AI analysis pipeline.
+A full-stack web application that helps users make better decisions by acting as a critical thinking advisor through an advanced **Mixture of Experts** AI system.
 
-**Key Innovation**: Multi-prompt pipeline that systematically challenges decisions through:
-1. **Parse** - Extract core decision
-2. **Assumptions** - Identify hidden beliefs
-3. **Counterarguments** - Generate opposing views
-4. **Risk Analysis** - Explore failure modes
-5. **Synthesis** - Create comprehensive challenge
+**Key Innovation**: Intelligent question classification routes each query to a domain-specialized expert (Financial, Career, Relationship, Ethical, Lifestyle, General) that uses Chain-of-Thought reasoning for deep analysis.
 
 ## 🎯 Quick Start (5 minutes)
 
@@ -23,23 +18,20 @@ pnpm install
 ### 2. Set up environment
 ```bash
 cp .env.example .env.local
-# Add your Supabase credentials:
-# NEXT_PUBLIC_SUPABASE_URL=...
-# NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+# Add your Groq API key:
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
-### 3. Set up database
-- Go to Supabase dashboard
-- Open SQL Editor
-- Run `scripts/001_create_tables.sql`
-- Run `scripts/002_create_rls_policies.sql`
+Get your key from [console.groq.com](https://console.groq.com)
 
-### 4. Start development
+### 3. Start development
 ```bash
 pnpm dev
 ```
 
 Visit `http://localhost:3000` 🎉
+
+**No database setup required!**
 
 ## 📚 Documentation Map
 
@@ -94,21 +86,29 @@ Choose your path based on what you need:
 ## 🏗️ What's Already Built
 
 ### ✅ Frontend
-- Landing page with features showcase
 - Interactive chat interface with real-time streaming
-- Analytics dashboard
 - Responsive dark-mode design
+- Markdown rendering with code highlighting
+- Copy to clipboard, clear chat, retry features
+- Toast notifications
+- localStorage persistence
 
 ### ✅ Backend
-- Multi-prompt pipeline API
-- Streaming response support
-- Follow-up message handling
-- Error handling
+- Mixture of Experts AI routing
+- 6 domain specialists (Financial, Career, Relationship, Ethical, Lifestyle, General)
+- Chain-of-Thought reasoning per domain
+- Dynamic temperature adjustment
+- Groq API integration with streaming
+- Rate limiting (10 req/min)
+- Content filtering (violence, self-harm, illegal)
+- Prompt injection defense
+- Input validation
 
-### ✅ Database
-- Supabase PostgreSQL with RLS
-- Conversations, messages, analytics tables
-- Migration scripts ready to run
+### ✅ Data Storage
+- Browser localStorage (no database)
+- Privacy-first approach
+- Session persistence
+- No authentication required
 
 ### ✅ Documentation
 - 8 comprehensive markdown guides
@@ -120,140 +120,152 @@ Choose your path based on what you need:
 
 ```
 but-what-if/
-├── app/                        # Next.js pages
-│   ├── page.tsx               # Landing page
-│   ├── chat/page.tsx          # Chat interface
-│   ├── analytics/page.tsx     # Analytics dashboard
-│   ├── api/chat/route.ts      # ⭐ Main API with 5-stage pipeline
-│   └── layout.tsx             # Root layout
-├── components/                 # React components
-│   ├── chat-interface.tsx     # Chat UI
-│   ├── landing-page.tsx       # Landing page UI
-│   ├── analytics-dashboard.tsx # Analytics UI
-│   └── ui/                    # Shadcn UI components
-├── lib/                        # Utilities
-│   ├── supabase/              # Supabase setup
-│   │   ├── client.ts
-│   │   ├── server.ts
-│   │   └── db.ts             # Database functions
-│   ├── constants/prompts.ts   # System prompts
-│   ├── types/index.ts         # TypeScript types
-│   └── utils.ts
-├── scripts/                    # Database migrations
-│   ├── 001_create_tables.sql
-│   └── 002_create_rls_policies.sql
-├── middleware.ts              # Session handling
-└── 📄 Documentation files (8 guides)
+├── app/                        # Next.js app directory
+│   ├── page.tsx               # Main chat interface
+│   ├── api/chat/route.ts      # ⭐ Mixture of Experts + Groq API
+│   ├── layout.tsx             # Root layout
+│   └── globals.css            # Global styles
+├── Source Code/
+│   ├── components/            # React components
+│   │   ├── chat-interface.tsx # Chat UI
+│   │   └── ui/                # shadcn UI components
+│   ├── lib/                   # Utilities
+│   │   ├── constants/
+│   │   │   └── prompts.ts     # Expert prompts & classification
+│   │   ├── types/index.ts     # TypeScript types
+│   │   └── utils.ts           # Utility functions
+│   └── [Documentation]        # 8 comprehensive guides
+├── package.json
+└── Configuration files
 ```
 
 ## 🔑 Key Files to Know
 
 | File | What It Does | When to Edit |
 |------|-------------|--------------|
-| `app/api/chat/route.ts` | 5-stage pipeline API | Change AI behavior |
-| `components/chat-interface.tsx` | Chat UI | Modify chat display |
-| `components/landing-page.tsx` | Landing page | Update homepage |
-| `lib/constants/prompts.ts` | System prompts | Change analysis prompts |
+| `app/api/chat/route.ts` | Mixture of Experts + Groq API | Change AI behavior, add experts |
+| `Source Code/components/chat-interface.tsx` | Chat UI | Modify chat display |
+| `Source Code/lib/constants/prompts.ts` | Expert prompts & classification | Change prompts, add domains |
 | `lib/supabase/db.ts` | Database functions | Add database operations |
 | `app/globals.css` | Theme & styling | Change colors/fonts |
 
-## 🎯 The 5-Stage Pipeline
+## 🎯 The Mixture of Experts System
 
-When a user sends their first message:
+When a user sends a message:
 
 ```
-"I'm thinking about quitting my job"
+"Should I buy a house or keep renting?"
     ↓
-STAGE 1: Parser extracts "Decision: Career change from employment to unknown"
+Question Classification
     ↓
-STAGE 2: Assumptions identifies "You assume new opportunity exists, You assume savings last"
+Determined: FINANCIAL (keyword: buy, house, renting)
     ↓
-STAGE 3: Counterarguments generates "You might fail financially, Market might be bad"
+Financial Expert Selected
     ↓
-STAGE 4: Risk Analysis discovers "Family impact, Resume gap, Loss of benefits"
+Chain-of-Thought Reasoning:
+  1. Follow the money (down payment, mortgage, maintenance)
+  2. Calculate worst-case (market crash, job loss)
+  3. Identify hidden costs (taxes, insurance, repairs)
+  4. Stress test (what if rates rise?)
+  5. Compare alternatives (investing difference)
     ↓
-STAGE 5: Synthesis creates comprehensive analytical response
+Structured Response:
+  - REASONING: Expert's step-by-step thinking
+  - DETAILED: Financial blind spots and risks
+  - OPTIONS: Buy vs Rent with specific pros/cons
     ↓
-Response streamed to user in real-time
+Streamed to user in real-time via Groq
 ```
 
-Each stage uses GPT-4 and builds on previous outputs for deep analysis.
+Each expert (Financial, Career, Relationship, Ethical, Lifestyle, General) uses domain-specific Chain-of-Thought reasoning.
 
 ## 🚀 What To Do Next
 
-### Option 1: Get Running Locally (5 min)
+### Option 1: Get Running Locally (2 min)
 ```bash
 pnpm install
 cp .env.example .env.local
-# Add Supabase credentials
+# Add Groq API key
+GROQ_API_KEY=your_key
 pnpm dev
 ```
 
 ### Option 2: Understand the Code (15 min)
 Read in order:
 1. [QUICKSTART.md](./QUICKSTART.md) - Setup and structure
-2. [ARCHITECTURE.md](./ARCHITECTURE.md) - How it all works
-3. Browse: `app/api/chat/route.ts` - See the pipeline
+2. [ARCHITECTURE.md](./ARCHITECTURE.md) - Mixture of Experts system
+3. Browse: `app/api/chat/route.ts` - See the implementation
 
-### Option 3: Deploy to Production (30 min)
+### Option 3: Deploy to Production (10 min)
 Follow: [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 ### Option 4: Customize (varies)
-- Change prompts: Edit `lib/constants/prompts.ts`
+- Add expert: Edit `Source Code/lib/constants/prompts.ts`
+- Change prompts: Modify expert prompts in same file
 - Change design: Edit `app/globals.css` and components
-- Change behavior: Modify `app/api/chat/route.ts`
+- Adjust safety: Modify validation functions in `route.ts`
 
 ## 💡 Key Concepts
 
 ### The Critical Thinking Approach
 Instead of helping users confirm decisions, this AI actively challenges them to think deeper and consider what they might be missing.
 
-### 5-Stage Pipeline
-Progressive analysis that builds understanding layer by layer, creating richer insights than a single-prompt approach.
+### Mixture of Experts
+Questions are intelligently classified and routed to domain specialists, each with expertise in Financial, Career, Relationship, Ethical, Lifestyle, or General decision-making.
+
+### Chain-of-Thought Reasoning
+Each expert follows a structured thinking process before responding, ensuring thorough analysis.
 
 ### Real-Time Streaming
-Responses stream character-by-character for better UX and immediate feedback.
+Groq provides ultra-fast streaming (~200-300 tokens/sec) for immediate feedback.
 
-### Data Privacy
-Row Level Security ensures users only see their own conversations and decisions.
+### Privacy First
+All data stays in browser localStorage - no server-side storage, no authentication needed.
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Next.js 16 + React 19 + Tailwind CSS
-- **UI Components**: Shadcn/ui
-- **AI**: OpenAI GPT-4 (via Vercel AI Gateway)
-- **Database**: Supabase PostgreSQL
-- **Streaming**: Vercel AI SDK 6
+- **Frontend**: Next.js 16 + React 19 + Tailwind CSS v4
+- **UI Components**: shadcn/ui (Radix UI + Tailwind)
+- **AI**: Groq (LLaMA 3.3 70B Versatile)
+- **Storage**: Browser localStorage
+- **Prompting**: Mixture of Experts + Chain-of-Thought
 - **Deployment**: Vercel
 
 ## ❓ Common Questions
 
-**Q: How do I change the system prompts?**
-A: Edit `lib/constants/prompts.ts` - all prompts are defined there.
+**Q: How do I change the expert prompts?**
+A: Edit `Source Code/lib/constants/prompts.ts` - all expert prompts are defined in `EXPERT_PROMPTS`.
+
+**Q: How do I add a new expert domain?**
+A: 1) Add to `QuestionType` enum, 2) Add patterns to `classifyQuestion()`, 3) Add expert prompt to `EXPERT_PROMPTS` object.
 
 **Q: How do I modify the UI?**
-A: Edit component files in `components/` and styling in `app/globals.css`.
+A: Edit `Source Code/components/chat-interface.tsx` and styling in `app/globals.css`.
 
-**Q: How do I add a new page?**
-A: Create `app/[name]/page.tsx` - Next.js will automatically route it.
-
-**Q: How do I save data to database?**
-A: Use functions from `lib/supabase/db.ts` in your API routes.
+**Q: How do I adjust rate limiting?**
+A: Change `MAX_REQUESTS_PER_MINUTE` constant in `app/api/chat/route.ts`.
 
 **Q: How do I deploy?**
-A: Follow the step-by-step guide in [DEPLOYMENT.md](./DEPLOYMENT.md).
+A: Follow [DEPLOYMENT.md](./DEPLOYMENT.md). Just need to add `GROQ_API_KEY` in Vercel.
 
 ## 🐛 Debugging
 
 ### Chat not responding?
-- Check OpenAI API access
-- Review `app/api/chat/route.ts` for errors
-- Check browser console for errors
+- Check Groq API key in `.env.local`
+- Check Groq API status: [status.groq.com](https://status.groq.com)
+- Review browser console for errors
+- Check `app/api/chat/route.ts` for server errors
 
-### Database not saving?
-- Verify Supabase connection
-- Check RLS policies are enabled
-- Run migrations if not done yet
+### localStorage not saving?
+- Check browser privacy settings
+- Verify localStorage is enabled
+- Check browser storage quota
+- Try incognito mode to test
+
+### Classification not working?
+- Check console for `🎯 Question classified as:` logs
+- Review patterns in `classifyQuestion()` function
+- Test with obvious keywords for each domain
 
 ### UI looks broken?
 - Clear Next.js cache: `rm -rf .next`

@@ -2,30 +2,33 @@
 
 ## What is But, What If...?
 
-But, What If... is an AI-powered decision analysis tool that challenges your assumptions, explores worst-case scenarios, and reveals hidden complexity in your choices.
+But, What If... is an AI-powered decision analysis tool that uses a Mixture of Experts system to deliver domain-specialized critiques. Questions are intelligently routed to expert prompts (Financial, Career, Relationship, Ethical, Lifestyle, General) that use Chain-of-Thought reasoning for deeper analysis.
 
 ## Features
 
-✅ **5-Stage Analysis Pipeline**
-- Parser: Extract core decision
-- Assumptions: Identify hidden beliefs
-- Counterarguments: Generate opposing views
-- Risk Analysis: Explore failure modes
-- Synthesis: Comprehensive challenge
+✅ **Mixture of Experts System**
+- Intelligent question classification
+- 6 domain specialists (Financial, Career, Relationship, Ethical, Lifestyle, General)
+- Chain-of-Thought reasoning per domain
 
-✅ **Real-Time Streaming Responses** - See the AI think in real-time
+✅ **Structured Analysis**
+- REASONING: Step-by-step expert thinking
+- DETAILED: Blind spots, risks, real talk
+- OPTIONS: Concrete alternatives with pros/cons
 
-✅ **Conversation History** - Continue debates across multiple messages
+✅ **Real-Time Streaming** - Lightning-fast responses with Groq (~200-300 tokens/sec)
 
-✅ **Decision Analytics** - Track decisions and outcomes over time
+✅ **Conversation History** - localStorage persistence, no account needed
 
-✅ **Dark Mode Design** - Beautiful, focused interface with red/orange accents
+✅ **Safety Features** - Rate limiting, content filtering, prompt injection defense
+
+✅ **Modern UI** - Markdown rendering, code highlighting, copy to clipboard
 
 ## Tech Stack
 
-- **Frontend**: Next.js 16 + React 19 + Shadcn/ui + Tailwind CSS
-- **AI**: OpenAI GPT-4 via Vercel AI Gateway + AI SDK 6
-- **Database**: Supabase PostgreSQL with Row Level Security
+- **Frontend**: Next.js 16 + React 19 + shadcn/ui + Tailwind CSS v4
+- **AI**: Groq (LLaMA 3.3 70B Versatile) with Mixture of Experts
+- **Storage**: Browser localStorage (no database required)
 - **Deployment**: Vercel
 
 ## Local Development
@@ -53,103 +56,105 @@ pnpm install
 # Copy example
 cp .env.example .env.local
 
-# Add your Supabase credentials
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
+# Add your Groq API key
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
-3. **Database setup**
-```bash
-# In Supabase dashboard, run these SQL scripts:
-# 1. scripts/001_create_tables.sql
-# 2. scripts/002_create_rls_policies.sql
-```
+Get your API key from [console.groq.com](https://console.groq.com)
 
-4. **Start development server**
 ```bash
 pnpm dev
 ```
 
 Visit `http://localhost:3000`
 
+**No database setup needed!**
+
 ## Project Structure
 
 ```
 but-what-if/
 ├── app/
-│   ├── api/chat/route.ts          # Multi-prompt pipeline API
-│   ├── page.tsx                   # Landing page
-│   ├── chat/page.tsx              # Chat interface
-│   ├── analytics/page.tsx         # Analytics dashboard
-│   └── layout.tsx                 # Root layout
-├── components/
-│   ├── chat-interface.tsx         # Main chat UI
-│   ├── landing-page.tsx           # Landing page
-│   ├── analytics-dashboard.tsx    # Analytics UI
-│   └── ui/                        # Shadcn UI components
-├── lib/
-│   ├── supabase/
-│   │   ├── client.ts              # Browser client
-│   │   ├── server.ts              # Server client
-│   │   └── db.ts                  # Database utilities
-│   ├── constants/prompts.ts       # System prompts
-│   ├── types/index.ts             # TypeScript types
-│   └── utils.ts                   # Utility functions
-├── scripts/
-│   ├── 001_create_tables.sql      # Create tables
-│   └── 002_create_rls_policies.sql # RLS policies
-└── middleware.ts                   # Supabase session handling
+│   ├── api/chat/route.ts          # Mixture of Experts + Groq API
+│   ├── page.tsx                   # Main chat interface
+│   ├── layout.tsx                 # Root layout
+│   └── globals.css                # Global styles
+├── Source Code/
+│   ├── components/
+│   │   ├── chat-interface.tsx     # Main chat UI
+│   │   └── ui/                    # shadcn UI components
+│   ├── lib/
+│   │   ├── constants/
+│   │   │   └── prompts.ts         # Expert prompts & classification
+│   │   ├── types/
+│   │   │   └── index.ts           # TypeScript types
+│   │   └── utils.ts               # Utility functions
+│   └── [Documentation]
+├── package.json
+└── [Config files]
 ```
 
 ## Core Components
 
-### Chat Interface (`components/chat-interface.tsx`)
-- Real-time streaming chat
-- Message history
-- Loading indicators
-- Input validation
+### Chat Interface (`Source Code/components/chat-interface.tsx`)
+- Real-time streaming chat with Groq
+- Message history from localStorage
+- Loading indicators and timeouts
+- Input validation (3-2000 chars)
+- Copy to clipboard, retry, clear chat
+- Markdown rendering with code highlighting
 
 ### API Route (`app/api/chat/route.ts`)
 ```ts
 POST /api/chat
 Body: { messages: ChatMessage[] }
-Response: Streaming text response
+Response: Server-Sent Events stream
 ```
 
-### Database (`lib/supabase/db.ts`)
-- `saveConversation()` - Create new chat
-- `saveMessage()` - Store user/assistant message
-- `saveDecisionAnalytics()` - Log decision analysis
-- `getConversations()` - Fetch user's conversations
-- `getMessages()` - Fetch conversation history
-- `getDecisionAnalytics()` - Fetch decision history
+**Pipeline:**
+1. Input validation & content filtering
+2. Rate limiting check
+3. Question classification
+4. Expert prompt selection
+5. Chain-of-Thought reasoning
+6. Streaming response
+## The Mixture of Experts System
 
-## The 5-Stage Pipeline
-
-When a user sends their first message, the API runs through this pipeline:
+Each question is intelligently classified and routed to a domain specialist:
 
 ```
 User Input
     ↓
-[1] PARSER: Extract core decision
+Question Classification
+(Financial | Career | Relationship | Ethical | Lifestyle | General)
     ↓
-[2] ASSUMPTIONS: Identify hidden beliefs
+Expert Prompt Selection
     ↓
-[3] COUNTERARGUMENTS: Generate opposing views
+Chain-of-Thought Reasoning (domain-specific)
     ↓
-[4] RISK_ANALYSIS: Explore failure modes
-    ↓
-[5] SYNTHESIS: Create comprehensive response
+Structured Response:
+  - REASONING: Step-by-step analysis
+  - DETAILED: Blind spots, risks, real talk
+  - OPTIONS: Alternatives with pros/cons
     ↓
 Streamed to User
 ```
 
-Each stage uses GPT-4 to build on the previous analysis, creating a deeply thoughtful challenge to the user's decision.
+**Expert Specializations:**
+- **Financial**: Money flows, risks, opportunity costs
+- **Career**: Trajectory, skills, market dynamics
+- **Relationship**: Emotional patterns, perspectives, compatibility
+- **Ethical**: Values, fairness, moral implications
+- **Lifestyle**: Health, habits, long-term effects
+- **General**: Multi-domain reasoning
 
 ## Key Files to Modify
 
-### To change system prompts:
-Edit `lib/constants/prompts.ts`
+### To change expert prompts:
+Edit `Source Code/lib/constants/prompts.ts`
+
+### To modify classification:
+Edit `classifyQuestion()` in `Source Code/lib/constants/prompts.ts`
 
 ### To modify API logic:
 Edit `app/api/chat/route.ts`
@@ -158,10 +163,10 @@ Edit `app/api/chat/route.ts`
 Edit `app/globals.css` for theme tokens
 Edit component files for layout/design
 
-### To add database fields:
-1. Create SQL migration in `scripts/`
-2. Update `lib/types/index.ts` interfaces
-3. Update database utilities in `lib/supabase/db.ts`
+### To adjust safety features:
+- Rate limiting: `checkRateLimit()` in `route.ts`
+- Content filtering: `filterHarmfulContent()` in `route.ts`
+- Prompt injection: `detectPromptInjection()` in `route.ts`
 
 ## Testing
 
@@ -176,37 +181,42 @@ curl -X POST http://localhost:3000/api/chat \
   }'
 ```
 
-### Test Supabase connection:
-```ts
-// In a route handler or action:
-import { createServerClient } from '@/lib/supabase/server'
+### Test question classification:
+Open browser console and check for:
+```
+🎯 Question classified as: career
+```
 
-const supabase = await createServerClient()
-const { data, error } = await supabase.auth.getUser()
+### Test localStorage:
+```js
+// In browser console
+localStorage.getItem('chatSessions')
 ```
 
 ## Common Tasks
 
-### Add a new API endpoint
-1. Create `app/api/[name]/route.ts`
-2. Implement POST/GET/etc handlers
-3. Use `createServerClient` for database access
+### Add a new expert domain
+1. Add domain to `QuestionType` enum in `prompts.ts`
+2. Add classification patterns to `classifyQuestion()`
+3. Create expert prompt in `EXPERT_PROMPTS`
+4. Test classification accuracy
 
-### Add database table
-1. Create migration file in `scripts/`
-2. Add RLS policies
-3. Update types in `lib/types/index.ts`
-4. Add utility functions in `lib/supabase/db.ts`
+### Adjust rate limiting
+Edit `MAX_REQUESTS_PER_MINUTE` in `app/api/chat/route.ts`
+
+### Modify temperature settings
+Edit `getOptimalSettings()` in `app/api/chat/route.ts`
 
 ### Style a component
 - Use Tailwind CSS classes
 - Reference design tokens in `app/globals.css`
-- Color palette: Black, Slate-800, Red-500, Orange-500
+- Use shadcn/ui components from `Source Code/components/ui/`
 
 ### Debug streaming responses
 Add console.log in `app/api/chat/route.ts`:
 ```ts
-console.log('[v0] Pipeline stage:', stageName)
+console.log('🎯 Question classified as:', questionType)
+console.log('🌡️ Temperature:', temperature)
 ```
 
 ## Deployment
@@ -215,48 +225,63 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
 Quick deploy to Vercel:
 ```bash
-vercel deploy --prod
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+
+# Add GROQ_API_KEY in Vercel dashboard
+# Then deploy to production
+vercel --prod
 ```
+
+**No database setup required!**
 
 ## Performance Tips
 
-1. **Streaming**: Chat responses stream to client in real-time
-2. **Caching**: Consider caching decision analytics
-3. **Database**: Indexes on `user_id`, `conversation_id`, `created_at`
-4. **API**: Limit concurrent pipeline stages if needed
+1. **Streaming**: Groq provides ~200-300 tokens/sec (extremely fast)
+2. **localStorage**: Zero-latency data access
+3. **No Database**: No backend round-trips
+4. **Client-Side First**: All persistence is local
+5. **Code Splitting**: Dynamic imports for heavy components
 
 ## Security
 
-- ✅ Row Level Security enabled on all tables
-- ✅ Users can only access their own data
-- ✅ API validates request format
-- ✅ Environment variables are secure
+- ✅ Rate limiting (10 req/min per client)
+- ✅ Content filtering (violence, self-harm, illegal)
+- ✅ Prompt injection defense
+- ✅ Input validation (3-2000 chars)
+- ✅ API key security (server-side only)
+- ✅ Privacy-first (no server storage)
+- ✅ HTTPS only (via Vercel)
 
-To test RLS:
-```sql
--- As authenticated user
-SELECT * FROM conversations; -- Shows only their conversations
-
--- As different user
-SELECT * FROM conversations; -- Shows only their conversations
+**Test rate limiting:**
+```bash
+# Send 11 requests rapidly - last should be blocked
+for i in {1..11}; do curl -X POST http://localhost:3000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"messages":[{"role":"user","content":"test"}]}'; done
 ```
 
 ## Troubleshooting
 
 ### Chat not responding?
-- Check OpenAI credits
-- Verify API key in Vercel dashboard
+- Check Groq API key in `.env.local`
+- Verify Groq API status at [status.groq.com](https://status.groq.com)
 - Check browser console for errors
 - Review `app/api/chat/route.ts` error handling
+- Check rate limiting (10 req/min)
 
-### Database errors?
-- Verify Supabase connection
-- Check RLS policies enabled
-- Ensure tables exist
-- Review database logs
+### localStorage not persisting?
+- Check browser privacy settings
+- Verify localStorage is enabled
+- Check for quota exceeded errors
+- Try clearing browser cache
 
 ### Styling issues?
 - Clear Next.js cache: `rm -rf .next`
+- Restart dev server: `pnpm dev`
 - Verify Tailwind CSS config
 - Check class names in components
 
@@ -271,11 +296,11 @@ SELECT * FROM conversations; -- Shows only their conversations
 
 ## Resources
 
-- [Vercel AI SDK Docs](https://sdk.vercel.ai)
+- [Groq Documentation](https://console.groq.com/docs)
 - [Next.js Documentation](https://nextjs.org/docs)
-- [Supabase Docs](https://supabase.com/docs)
 - [Tailwind CSS](https://tailwindcss.com)
-- [OpenAI API](https://platform.openai.com/docs)
+- [shadcn/ui](https://ui.shadcn.com)
+- [LLaMA 3.3 Model Card](https://www.llama.com/llama3-3/)
 
 ## Support
 

@@ -19,17 +19,15 @@ Complete reference of all project files and their purposes.
 
 ### Pages
 | File | Purpose |
-|------|---------|
-| `app/page.tsx` | Landing page entry point |
-| `app/chat/page.tsx` | Chat interface page |
-| `app/analytics/page.tsx` | Analytics dashboard page |
+|------|----------|
+| `app/page.tsx` | Main chat interface entry point |
+| `app/layout.tsx` | Root layout with metadata and providers |
+| `app/globals.css` | Global styles and theme variables |
 
 ### Components
 | File | Purpose |
 |------|---------|
-| `components/landing-page.tsx` | Landing page UI with hero, features, 5-stage pipeline |
-| `components/chat-interface.tsx` | Main chat UI with message display and input |
-| `components/analytics-dashboard.tsx` | Analytics UI for decision tracking |
+| `Source Code/components/chat-interface.tsx` | Main chat UI with streaming, markdown, copy, retry features |
 
 ### UI Components (Auto-generated via shadcn)
 All components in `components/ui/` are shadcn/ui components and should not be manually edited.
@@ -38,33 +36,28 @@ All components in `components/ui/` are shadcn/ui components and should not be ma
 
 | File | Purpose |
 |------|---------|
-| `app/api/chat/route.ts` | **Core API** - Multi-prompt pipeline, streaming responses |
+| `app/api/chat/route.ts` | **Core API** - Mixture of Experts, Groq integration, streaming responses, safety features |
 | `app/layout.tsx` | Root layout with metadata and global setup |
-| `middleware.ts` | Supabase session middleware |
 
-## 🗄️ Database & Supabase
+## 🗄️ Database & Storage
 
-### Database Utilities
-| File | Purpose |
-|------|---------|
-| `lib/supabase/client.ts` | Browser-side Supabase client |
-| `lib/supabase/server.ts` | Server-side Supabase client |
-| `lib/supabase/db.ts` | **Database functions** - CRUD operations for conversations, messages, analytics |
+**Storage Method:** Browser localStorage (no database)
 
-### Database Migrations
-| File | Purpose |
-|------|---------|
-| `scripts/001_create_tables.sql` | Create tables: conversations, messages, decision_analytics |
-| `scripts/002_create_rls_policies.sql` | Row Level Security policies for data privacy |
+| Feature | Implementation |
+|---------|---------------|
+| Chat sessions | Stored in localStorage as JSON |
+| Message history | Part of chat session object |
+| Persistence | Survives page reloads |
+| Privacy | All data stays in browser |
 
 ## 📦 Utilities & Configuration
 
 ### Constants & Types
 | File | Purpose |
 |------|---------|
-| `lib/constants/prompts.ts` | **System prompts** - All stage prompts, constants for pipeline |
-| `lib/types/index.ts` | **TypeScript types** - Conversation, Message, DecisionAnalytic, etc. |
-| `lib/utils.ts` | General utility functions (cn, formatting, etc.) |
+| `Source Code/lib/constants/prompts.ts` | **Expert prompts & classification** - Mixture of Experts, question classification, domain-specific prompts |
+| `Source Code/lib/types/index.ts` | **TypeScript types** - Message, ChatSession, QuestionType, etc. |
+| `Source Code/lib/utils.ts` | General utility functions (cn, formatting, etc.) |
 
 ### Configuration
 | File | Purpose |
@@ -107,40 +100,30 @@ but-what-if/
 ```
 User Input
     ↓
-components/chat-interface.tsx
+Source Code/components/chat-interface.tsx
     ↓ (POST /api/chat)
 app/api/chat/route.ts
-    ├─ Parse user message
-    ├─ Get conversation history
-    ├─ Run 5-stage pipeline:
-    │  ├─ Parser prompt (lib/constants/prompts.ts)
-    │  ├─ Assumptions prompt
-    │  ├─ Counterarguments prompt
-    │  ├─ Risk analysis prompt
-    │  └─ Synthesis prompt
-    └─ Stream response
+    ├─ Input validation & content filtering
+    ├─ Rate limiting check
+    ├─ Question classification (Financial/Career/etc)
+    ├─ Expert prompt selection
+    ├─ Dynamic temperature setting
+    ├─ Groq API call with streaming
+    └─ Prompt injection defense
     ↓
-components/chat-interface.tsx (displays streamed response)
+Stream response back to client
     ↓
-lib/supabase/db.ts (save message)
+Source Code/components/chat-interface.tsx (display with markdown)
     ↓
-Supabase PostgreSQL
+localStorage (save to browser storage)
 ```
 
-## 🔐 Security Files
-
-- `middleware.ts` - Session handling and auth protection
-- `scripts/002_create_rls_policies.sql` - Row Level Security policies
-- `lib/supabase/server.ts` - Server-side auth context
-
-## 📊 Important API Endpoints
+## � Important API Endpoints
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/` | GET | Landing page |
-| `/chat` | GET | Chat interface page |
-| `/analytics` | GET | Analytics dashboard page |
-| `/api/chat` | POST | Main chat API with multi-prompt pipeline |
+| `/` | GET | Main chat interface |
+| `/api/chat` | POST | Chat API with Mixture of Experts and Groq streaming |
 
 ## 🚀 Deployment Files
 

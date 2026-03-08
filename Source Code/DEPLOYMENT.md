@@ -3,81 +3,81 @@
 ## Pre-Deployment
 
 ### Environment Setup
-- [ ] Verify `NEXT_PUBLIC_SUPABASE_URL` environment variable is set
-- [ ] Verify `NEXT_PUBLIC_SUPABASE_ANON_KEY` environment variable is set
-- [ ] Verify Supabase project is connected and accessible
-- [ ] Check that OpenAI API key is available (via Vercel AI Gateway)
-
-### Database Setup
-- [ ] Run migration script `001_create_tables.sql` in Supabase
-- [ ] Run RLS policies script `002_create_rls_policies.sql`
-- [ ] Verify tables exist: `conversations`, `messages`, `decision_analytics`
-- [ ] Test Supabase connection with `lib/supabase/server.ts`
+- [ ] Verify `GROQ_API_KEY` environment variable is set
+- [ ] Test API key works with Groq console
+- [ ] Check API credits/quota
 
 ### Code Verification
 - [ ] All TypeScript files compile without errors
-- [ ] `app/api/chat/route.ts` includes complete 5-stage pipeline
-- [ ] Chat interface component uses `useChat` from `@ai-sdk/react`
-- [ ] Landing page has all features visible
-- [ ] Analytics dashboard component is created
+- [ ] `app/api/chat/route.ts` includes Mixture of Experts
+- [ ] Question classification working correctly
+- [ ] Chat interface component tested
+- [ ] localStorage persistence verified
+- [ ] Rate limiting tested
+- [ ] Content filtering tested
+- [ ] Prompt injection defense verified
 
 ### Dependencies
 - [ ] Run `pnpm install` to verify all dependencies install
-- [ ] Verify `ai` (^6.0.0) is installed
-- [ ] Verify `@ai-sdk/openai` is installed
-- [ ] Verify `@supabase/supabase-js` is installed
+- [ ] Verify `groq-sdk` (^0.37.0) is installed
+- [ ] Verify all Next.js 16 dependencies present
+- [ ] No security vulnerabilities (`pnpm audit`)
 
 ## Deployment Steps
 
 ### 1. Vercel Deployment
 ```bash
-# Connect GitHub repository if using Git
+# Option 1: Connect GitHub repository
 git remote add origin <your-repo-url>
 git push origin main
+# Then import in Vercel dashboard
 
-# Or use Vercel CLI
-vercel deploy --prod
+# Option 2: Use Vercel CLI
+npm i -g vercel
+vercel
+vercel --prod
 ```
 
 ### 2. Environment Variables (Vercel)
 In Vercel Project Settings → Environment Variables, add:
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- Note: OpenAI API key flows through Vercel AI Gateway (no manual setup needed)
+- `GROQ_API_KEY` - Your Groq API key from console.groq.com
 
-### 3. Database Migration (Supabase)
-- Navigate to Supabase SQL Editor
-- Create new query
-- Copy content from `scripts/001_create_tables.sql`
-- Execute the query
-- Repeat for `scripts/002_create_rls_policies.sql`
+That's it! Only one environment variable needed.
 
-### 4. Test Deployment
+### 3. Test Deployment
 - [ ] Visit deployed URL
-- [ ] Test landing page loads correctly
-- [ ] Test chat interface loads
-- [ ] Send a test message and verify API response
-- [ ] Check database for saved messages
-- [ ] Test analytics page loads
+- [ ] Test chat interface loads correctly
+- [ ] Send a test message and verify AI response
+- [ ] Check localStorage saves conversations
+- [ ] Verify streaming works properly
+- [ ] Test on mobile devices
+- [ ] Check different question types (Financial, Career, etc.)
+- [ ] Test rate limiting (send 11 requests quickly)
+- [ ] Test content filtering (try harmful keywords)
+- [ ] Test prompt injection defense
 
 ## Post-Deployment
 
 ### Monitoring
-- [ ] Set up error tracking (Sentry recommended)
-- [ ] Monitor OpenAI API usage
-- [ ] Check Supabase database performance
-- [ ] Set up logging for chat API
+- [ ] Monitor Groq API usage in console.groq.com
+- [ ] Check Vercel Analytics for page metrics
+- [ ] Monitor API response times
+- [ ] Track error rates in Vercel logs
+- [ ] Set up uptime monitoring (optional)
 
 ### Optimization
 - [ ] Enable Edge caching for static assets
 - [ ] Configure image optimization
-- [ ] Set up database query optimization
 - [ ] Monitor API response times
+- [ ] Test on various devices and browsers
+- [ ] Verify mobile experience
 
 ### Security
-- [ ] Verify RLS policies are active
-- [ ] Test that users can only access their own data
-- [ ] Enable CORS properly for API endpoints
+- [ ] Verify rate limiting is active
+- [ ] Test content filtering with various inputs
+- [ ] Verify prompt injection defense works
+- [ ] Check API keys are not exposed to client
+- [ ] Enable HTTPS (automatic on Vercel)
 - [ ] Regular security audits
 
 ## Troubleshooting
@@ -85,19 +85,39 @@ In Vercel Project Settings → Environment Variables, add:
 ### Common Issues
 
 **API returns 401 Unauthorized**
-- Check OpenAI credentials in Vercel AI Gateway
-- Verify API key has correct permissions
-- Check rate limits
+- Check Groq API key is correct
+- Verify key is set in Vercel environment variables
+- Check API key has not expired
+- Verify you have API credits
 
 **Chat messages not saving**
-- Verify Supabase connection string
-- Check RLS policies are enabled
-- Ensure user is authenticated
-- Check database disk space
+- Check browser localStorage is enabled
+- Verify browser storage quota not exceeded
+- Check browser privacy settings
+- Try incognito mode to test
 
-**Frontend doesn't connect to API**
-- Verify CORS headers in `/app/api/chat/route.ts`
-- Check API endpoint is correct in chat component
+**Rate limiting issues**
+- Default is 10 requests/minute
+- Adjust `MAX_REQUESTS_PER_MINUTE` in `route.ts`
+- Consider Redis for production rate limiting
+
+**Streaming not working**
+- Check Vercel function timeout settings
+- Verify Groq API status
+- Check browser console for errors
+- Test with curl to isolate client vs server
+
+**Classification not accurate**
+- Review patterns in `classifyQuestion()` function
+- Add more specific keywords
+- Test with various question types
+- Check console for classification logs
+
+**Content filtering too aggressive**
+- Review patterns in `filterHarmfulContent()`
+- Adjust keywords as needed
+- Test edge cases
+- Balance safety with usability
 - Verify Vercel deployment is complete
 
 **Slow responses**

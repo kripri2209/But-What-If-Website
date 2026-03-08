@@ -14,34 +14,40 @@ But, What If... uses AI to help you make better decisions by:
 
 ## Technology Stack
 
-- **Frontend**: Next.js 16 + shadcn/ui + Tailwind CSS v4
-- **AI**: OpenAI GPT-4 via Vercel AI Gateway
-- **Database**: Supabase PostgreSQL with Row Level Security
+- **Frontend**: Next.js 16 + React 19 + shadcn/ui + Tailwind CSS v4
+- **AI**: Groq (LLaMA 3.3 70B Versatile) with Mixture of Experts routing
+- **Storage**: Browser localStorage for conversation persistence
 - **Deployment**: Vercel
-- **Real-time**: AI SDK 6 with streaming responses
+- **Real-time**: Groq SDK with streaming responses
 
 ## Architecture
 
-### API Pipeline
+### Mixture of Experts System
 
-Each user input flows through our analysis system:
+Intelligent question classification routes each query to a specialized expert:
 
 ```
-User Input 
-  → Parser Prompt (clarify decision)
-  → Assumptions Prompt (identify hidden beliefs)
-  → Counterarguments Prompt (generate opposing views)
-  → Risk Analysis Prompt (explore failure modes)
-  → Synthesis Prompt (comprehensive challenge)
+User Input
+  → Question Classification (Financial, Career, Relationship, Ethical, Lifestyle, General)
+  → Expert Prompt Selection (domain-specific analysis)
+  → Chain-of-Thought Reasoning
+  → Structured Response (REASONING → DETAILED → OPTIONS)
+  → Streaming to Client
 ```
 
-### Database Schema
+**Expert Domains:**
+- **Financial Expert**: Money, investments, budgets
+- **Career Expert**: Jobs, businesses, professional growth
+- **Relationship Expert**: Connections, family, partnerships
+- **Ethical Expert**: Moral dilemmas, values conflicts
+- **Lifestyle Expert**: Health, location, life changes
+- **General Expert**: Everything else
 
-- **conversations** - Multi-turn chat sessions with users
-- **messages** - Individual user and assistant messages with analysis data
-- **decision_analytics** - Tracked decisions with outcomes, risks, and lessons learned
+### Storage
 
-All tables use Row Level Security (RLS) to ensure users only access their own data.
+- **localStorage** - Conversation history stored in browser
+- **Session persistence** - Chat history survives page reloads
+- **No authentication required** - Privacy-first approach
 
 ## Pages
 
@@ -51,11 +57,15 @@ All tables use Row Level Security (RLS) to ensure users only access their own da
 
 ## Key Features
 
-- **Multi-turn Conversations** - Debate with the AI across multiple messages
+- **Mixture of Experts** - Intelligent routing to domain-specialized prompts
+- **Multi-turn Conversations** - Continue debating across multiple messages with context
 - **Streaming Responses** - Real-time AI response streaming for immediate feedback
-- **Conversation History** - Track and review all decisions challenged
-- **Decision Analytics** - View patterns in your assumptions and common risks
-- **Dark Theme** - Red and orange accent colors for high-contrast readability
+- **Chain-of-Thought Reasoning** - Step-by-step analysis before final verdict
+- **Structured Responses** - REASONING → DETAILED → OPTIONS format
+- **Conversation History** - localStorage persistence survives page reloads
+- **Dynamic Temperature** - Adjusts creativity based on question type
+- **Copy to Clipboard** - Easy sharing of AI insights
+- **Markdown Support** - Code highlighting, formatting, lists
 
 ## Getting Started
 
@@ -65,36 +75,32 @@ pnpm install
 ```
 
 2. Set up environment variables:
-```
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_key
-```
-
-3. Create database tables (run the SQL migrations):
 ```bash
-# Tables are created via scripts/001_create_tables.sql
-# RLS policies via scripts/002_create_rls_policies.sql
+cp .env.example .env.local
+# Add your Groq API key
+GROQ_API_KEY=your_groq_api_key
 ```
 
-4. Run the development server:
+3. Run the development server:
 ```bash
 pnpm dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Usage
 
-1. Visit the landing page and click "Start Debating"
+1. Visit the chat interface at [http://localhost:3000](http://localhost:3000)
 2. Share a decision you're making or considering
 3. But, What If... will challenge your thinking with:
-   - Hidden assumptions you're making
-   - Strong counterarguments
-   - Potential risks and failures
-   - Alternative perspectives
+   - **Reasoning**: Step-by-step analysis of your decision
+   - **What You're Missing**: Blind spots and ignored factors
+   - **What Could Go Wrong**: Specific risks and failure scenarios  
+   - **Real Talk**: Direct truth about wishful thinking
+   - **Bottom Line**: Hard questions you need to answer
+   - **Options**: Concrete alternatives with pros/cons
 4. Continue the conversation to explore specific concerns
-5. View your decision history in the Analytics dashboard
+5. Your chat history persists in browser localStorage
 
 ## Example Decisions to Challenge
 
@@ -163,34 +169,38 @@ Key Principles:
 
 ```
 /app
-  /api/chat - Chat API route with AI streaming
-  /chat - Chat page component
-  /analytics - Analytics dashboard page
-  page.tsx - Landing page
-/components
-  chat-interface.tsx - Multi-turn chat UI
-  landing-page.tsx - Landing page component
-  analytics-dashboard.tsx - Analytics visualization
-/lib/supabase
-  client.ts - Supabase client setup
-  server.ts - Supabase server setup
-/scripts
-  001_create_tables.sql - Database schema
-  002_create_rls_policies.sql - Security policies
+  /api/chat - Chat API route with Groq AI streaming and Mixture of Experts
+  page.tsx - Main chat interface
+  layout.tsx - Root layout
+  globals.css - Global styles
+/Source Code
+  /components
+    chat-interface.tsx - Multi-turn chat UI
+    /ui - shadcn/ui component library
+  /lib
+    /constants
+      prompts.ts - Expert prompts and question classification
+    /types
+      index.ts - TypeScript type definitions
+    utils.ts - Utility functions
 ```
 
 ### Customization
 
 - **Theme Colors**: Edit color variables in `app/globals.css`
-- **System Prompt**: Modify the AI prompt in `app/api/chat/route.ts`
-- **UI Components**: Uses shadcn/ui components from `components/ui/`
+- **Expert Prompts**: Modify domain-specific prompts in `Source Code/lib/constants/prompts.ts`
+- **Question Classification**: Adjust patterns in `classifyQuestion()` function
+- **UI Components**: Uses shadcn/ui components from `Source Code/components/ui/`
 
-## Security
+## Security & Safety
 
-- **Row Level Security**: All user data is protected by Supabase RLS policies
-- **Authentication**: Users' own auth system (can be integrated with Supabase Auth)
-- **API Keys**: OpenAI key managed via Vercel AI Gateway environment variables
+- **Rate Limiting**: In-memory rate limiting (10 requests/minute per client)
+- **Content Filtering**: Blocks harmful content (violence, self-harm, illegal activity)
+- **Prompt Injection Defense**: Detects and neutralizes manipulation attempts
+- **Input Validation**: Length limits (3-2000 chars), text requirements
+- **Private by Default**: All data stored locally in browser, no accounts needed
 - **HTTPS Only**: Deployed on Vercel with automatic HTTPS
+- **API Keys**: Groq API key secured via environment variables
 
 ## Future Enhancements
 

@@ -11,86 +11,120 @@ Core features implemented. UI refinements and flow optimization in progress.
 ## What Has Been Built
 
 ### 1. **Frontend** (Next.js 16 + React 19)
-- ✅ Interactive typing intro screen showing "WELCOME TO BUT, WHAT IF..."
 - ✅ Interactive chat interface with real-time streaming
-- ✅ Click-to-skip functionality on intro screen
+- ✅ Message display with markdown rendering and code highlighting
+- ✅ Copy message to clipboard functionality
+- ✅ Clear conversation button
+- ✅ Retry failed messages
+- ✅ Toast notifications for user feedback
 - ✅ Responsive design with modern animations
-- 🔄 Navigation system (in progress)
+- ✅ Loading indicators and timeout warnings
 
 ### 2. **Backend API** (Groq LLaMA 3.3 70B)
-- ✅ Chat API (`/api/chat`) with But, What If... prompt
-- ✅ 6-stage analysis: Hidden Assumptions → Counterarguments → Failure Scenarios → What You're Ignoring → Hard Questions → Final Verdict
+- ✅ Chat API (`/api/chat`) with Mixture of Experts routing
+- ✅ Question classification (Financial, Career, Relationship, Ethical, Lifestyle, General)
+- ✅ Domain-specific expert prompts with Chain-of-Thought reasoning
+- ✅ Structured response format (REASONING → DETAILED → OPTIONS)
 - ✅ Streaming response support for real-time feedback
-- ✅ Follow-up message handling for continued debates
-- ✅ Error handling and validation
+- ✅ Follow-up message handling with conversation context
+- ✅ Dynamic temperature adjustment per question type
+- ✅ Comprehensive error handling and validation
+- ✅ Rate limiting (10 req/min per client)
+- ✅ Content filtering (violence, self-harm, illegal activity)
+- ✅ Prompt injection defense
 
-### 3. **Database** (Local Storage)
+### 3. **Data Storage** (Browser localStorage)
 - ✅ Chat sessions stored in browser localStorage
 - ✅ Conversation history management
 - ✅ Session persistence across page reloads
-- 🔄 Supabase integration (planned for future)
+- ✅ Privacy-first (no server-side storage)
+- ✅ No authentication required
 
-### 4. **Utilities & Infrastructure**
-- ✅ localStorage chat session management
-- ✅ React hooks for state management
-- ✅ TypeScript for type safety
-- ✅ Tailwind CSS for styling
+### 4. **Security & Safety**
+- ✅ Input validation (length, content type)
+- ✅ Rate limiting with in-memory store
+- ✅ Harmful content filtering
+- ✅ Prompt injection detection and defense
+- ✅ Meta-analysis responses for manipulation attempts
+- ✅ Crisis resources for at-risk content
 
 ### 5. **Documentation**
-- ✅ PROJECT_SUMMARY.md - Current project state (this file)
-- 🔄 Additional documentation as needed
+- ✅ README.md - Project overview
+- ✅ ARCHITECTURE.md - Technical design
+- ✅ PROJECT_SUMMARY.md - Current state (this file)
+- ✅ QUICKSTART.md - Developer guide
+- ✅ SETUP.md - Configuration guide
+- ✅ DEPLOYMENT.md - Deployment checklist
+- ✅ AI_IMPROVEMENTS.md - AI enhancement techniques
+- ✅ EDGE_CASE_HANDLING.md - Comprehensive edge case documentation
+- ✅ FILE_INDEX.md - Complete file reference
 
 ## Key Features
 
-### Interactive Typing Intro Screen
-- Displays "WELCOME TO BUT, WHAT IF..." with typing animation
-- Click-to-skip functionality
-- Never shows again after being skipped (stored in localStorage)
-- Smooth transitions to chat interface
+### Mixture of Experts System
+Intelligent question classification routes queries to domain-specialized experts:
+- **Financial Expert**: Money, investments, budgets, loans
+- **Career Expert**: Jobs, startups, professional growth
+- **Relationship Expert**: Dating, marriage, family, friendships
+- **Ethical Expert**: Moral dilemmas, values, honesty
+- **Lifestyle Expert**: Health, travel, life changes, habits
+- **General Expert**: Catch-all for other questions
 
-### The 6-Stage Analysis Pipeline
+### Chain-of-Thought Analysis
 ```
-User Input → Hidden Assumptions → Counterarguments → Failure Scenarios → What You're Ignoring → Hard Questions → Final Verdict
+User Input → Classification → Expert Selection → Chain-of-Thought → Structured Response
 ```
 
-Each stage builds on the previous one to create a comprehensive analysis response.
+Each expert follows domain-specific reasoning:
+1. Domain-specific analysis steps
+2. Risk identification
+3. Alternative exploration
+4. Structured output
+
+### Response Structure
+**REASONING**: Step-by-step Chain-of-Thought analysis
+**DETAILED**: What you're missing, risks, real talk, bottom line
+**OPTIONS**: Concrete alternatives with pros/cons
 
 ### Real-Time Chat Interface
-- First message runs full analysis pipeline
-- Follow-up messages use conversational context
-- **Advanced markdown rendering** with GitHub-flavored markdown support
-- **Code syntax highlighting** for code blocks
+- Streaming responses with Groq's ultra-fast inference
+- **Advanced markdown rendering** with GitHub-flavored markdown
+- **Code syntax highlighting** for technical discussions
 - **Copy any message** to clipboard with hover button
 - **Retry failed messages** automatically
+- **Clear conversation** to start fresh
 - **Toast notifications** for immediate feedback
-- Error handling and validation
+- Error handling with detailed messages
 - Session persistence with localStorage
- with session management
-- **Copy message functionality** (hover over any message)
-- **Clear conversation button** in header
-- **Toast notifications** for user actions and errors
-- **Retry buttons** for failed API requests
-- **Enhanced markdown rendering** with lists, code blocks, formatting
-### UI/UX
-- Clean, minimal design
-- Smooth animations and transitions
-- Responsive layout
-- Chat history sidebar
+- Dynamic temperature per question type
+
+### Security Features
+- Input validation (3-2000 chars, text required)
+- Rate limiting (10 requests/min)
+- Content filtering (violence, self-harm, illegal)
+- Prompt injection defense
+- Privacy-first (no server storage)
 
 ## File Structure
 
 ```
 but-what-if/
 ├── app/
-│   ├── api/chat/route.ts          ← Chat API with Groq
-│   ├── page.tsx                   ← Main entry (ChatInterface)
-│   ├── HomeLanding.tsx            ← Landing page component (unused)
-│   ├── OrbitalScreen.tsx          ← Orbital screen component (unused)
-│   └── layout.tsx                 ← Root layout
+│   ├── api/chat/route.ts          ← Chat API with Mixture of Experts
+│   ├── page.tsx                   ← Main chat interface entry
+│   ├── layout.tsx                 ← Root layout
+│   └── globals.css                ← Global styles
 ├── Source Code/
-│   └── components/
-│       ├── chat-interface.tsx     ← Main chat UI with typing intro
-│       └── ui/                    ← UI components
+│   ├── components/
+│   │   ├── chat-interface.tsx     ← Main chat UI
+│   │   └── ui/                    ← shadcn/ui components
+│   ├── lib/
+│   │   ├── constants/
+│   │   │   └── prompts.ts         ← Expert prompts & classification
+│   │   ├── types/
+│   │   │   └── index.ts           ← TypeScript types
+│   │   └── utils.ts               ← Utility functions
+│   └── [Documentation files]
 ├── package.json                   ← Dependencies
 └── Configuration files
 ```
@@ -99,43 +133,49 @@ but-what-if/
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| **Frontend** | Next.js 16, React 19, Tailwind CSS | User interface & interactions |
-| **AI** | Groq (LLaMA 3.3 70B) | LLM processing & analysis |
+| **Frontend** | Next.js 16, React 19, Tailwind CSS v4 | User interface & real-time interactions |
+| **AI** | Groq (LLaMA 3.3 70B Versatile) | Ultra-fast LLM inference & analysis |
+| **Prompting** | Mixture of Experts + Chain-of-Thought | Domain-specialized reasoning |
 | **Storage** | Browser localStorage | Conversation persistence |
-| **Deployment** | Vercel | Production hosting |
+| **UI Components** | shadcn/ui + Radix UI | Accessible, customizable components |
+| **Deployment** | Vercel | Production hosting with edge runtime |
 
 ## Environment Variables
 
 ```bash
-GROQ_API_KEY=                     # Your Groq API key for LLaMA model access
+GROQ_API_KEY=your_groq_api_key_here     # Required: Get from console.groq.com
 ```
 
-## Installation & Deployment
+That's it! No database credentials needed.
 
-### Local Development
+## Deployment to Vercel
+
 ```bash
-pnpm install
-# Add GROQ_API_KEY to .env.local
-pnpm dev
+# One-time setup
+vercel
+
+# Add environment variable in Vercel dashboard:
+GROQ_API_KEY=your_api_key
+
+# Deploy to production
+vercel --prod
 ```
 
-### Deployment to Vercel
-1. Connect GitHub repository
-2. Add GROQ_API_KEY in Vercel dashboard environment variables
-3. Deploy: `vercel deploy --prod`
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed steps.
+No database setup needed!
 
 ## What Users Experience
 
-✅ Engaging typing intro animation
-✅ AI-powered analysis of their ideas
-✅ Challenge to their hidden assumptions
+✅ Lightning-fast AI responses (Groq's ~200-300 tokens/sec)
+✅ Domain-specific expert analysis
+✅ Step-by-step Chain-of-Thought reasoning
+✅ Structured insights (reasoning, details, options)
+✅ Challenge to hidden assumptions
 ✅ Brutal counterarguments they hadn't considered
-✅ Failure scenario analysis
-✅ Hard questions that make them think deeper
-✅ Ongoing conversation to refine thinking
-✅ Persistent chat history across sessions
+✅ Specific failure scenario analysis
+✅ Hard questions that drive deeper thinking
+✅ Ongoing conversation to refine analysis
+✅ Private by default - no account needed
+✅ Persistent chat history in browser
 
 ## API Endpoint
 
@@ -163,10 +203,12 @@ Current benchmarks:
 
 ## Current Features
 
-✅ Interactive typing intro screen with "WELCOME TO BUT, WHAT IF..."
-✅ Click-to-skip functionality  
-✅ Full chat interface with But, What If... AI
-✅ 6-stage analysis pipeline
+✅ Mixture of Experts with 6 domain specialists
+✅ Intelligent question classification
+✅ Chain-of-Thought reasoning per domain
+✅ Dynamic temperature adjustment
+✅ Full chat interface with streaming
+✅ Structured responses (REASONING → DETAILED → OPTIONS)
 ✅ Chat history with localStorage persistence
 ✅ Session management across page reloads
 ✅ **Enhanced markdown rendering** with code syntax highlighting
@@ -174,61 +216,76 @@ Current benchmarks:
 ✅ **Retry failed messages** with one click
 ✅ **Clear conversation** button in header
 ✅ **Toast notifications** for user feedback
-✅ **Better error handling** with detailed messages
-✅ **Loading indicators** and timeout warnings
+✅ **Comprehensive error handling** with detailed messages
+✅ **Loading indicators** and timeout warnings (15s)
+✅ **Rate limiting** - 10 requests per minute
+✅ **Content filtering** - blocks harmful content
+✅ **Prompt injection defense** - detects manipulation
+✅ **Input validation** - length and content checks
 
 ## Next Steps / Future Enhancements
 
-1. **User Authentication**
-   - Sign-up/login pages
-   - User profiles
-   - Onboarding flow
+1. **Cloud Sync** (Optional)
+   - Backend storage for cross-device sync
+   - User authentication
+   - Cloud backup of conversations
 
-2. **Conversation Management**
-   - View/delete past conversations
+2. **Export Features**
    - Export conversations as PDF
-   - Share conversations
+   - Export as Markdown
+   - Share conversations via link
 
 3. **Advanced Analytics**
    - Decision outcome tracking
    - Lessons learned dashboard
-   - Success/failure metrics
-   - Decision patterns analysis
+   - Success/failure patterns
+   - Personal decision-making insights
 
-4. **Collaboration**
-   - Share decisions with teammates
+4. **More AI Models**
+   - Claude (Anthropic)
+   - GPT-4 (OpenAI)
+   - Gemini (Google)
+   - Model selection in UI
+
+5. **Collaboration**
+   - Share decisions with team
    - Collaborative analysis
    - Comments and annotations
 
-5. **Integrations**
-   - Email summaries
-   - Slack bot integration
-   - Calendar integration
-
-6. **Mobile App**
+6. **Mobile Experience**
+   - Progressive Web App
    - Native iOS/Android apps
-   - Push notifications
-   - Offline support
+   - Voice input support
+
+7. **Custom Experts**
+   - User-defined domain experts
+   - Industry-specific templates
+   - Custom prompt engineering
+
+8. **Integrations**
+   - Email summaries
+   - Slack bot
+   - Browser extension
 
 ## Testing Checklist
-Intro never reappears after being dismissed
-- [x] Chat interface loads after intro
-- [x] Chat API returns Devil's Advocate responses
+
+- [x] Chat interface loads correctly
+- [x] Chat API returns domain-expert responses
+- [x] Question classification works accurately
 - [x] Conversation history persists in localStorage
-- [x] Follow-up messages work in conversation
-- [x] **Copy message to clipboard works**
-- [x] **Markdown rendering with code highlighting**
-- [x] **Toast notifications display correctly**
-- [x] **Clear conversation button works**
-- [x] **Retry button appears on failed messages**
-- [x] Click-to-skip functionality works
-- [x] Chat interface loads after intro
-- [x] Chat API returns Devil's Advocate responses
-- [x] Conversation history persists in localStorage
-- [x] Follow-up messages work in conversation
-- [ ] Error handling for API failures
-- [ ] Mobile responsive design
-- [ ] Performance optimization
+- [x] Follow-up messages maintain context
+- [x] Copy message to clipboard works
+- [x] Markdown rendering with code highlighting
+- [x] Toast notifications display correctly
+- [x] Clear conversation button works
+- [x] Retry button appears on failed messages
+- [x] Rate limiting enforces 10 req/min limit
+- [x] Content filtering blocks harmful input
+- [x] Prompt injection defense activates
+- [x] Dynamic temperature adjusts per question type
+- [ ] Mobile responsive design fully tested
+- [ ] Performance optimization complete
+- [ ] Accessibility audit passed
 
 ## Support & Resources
 

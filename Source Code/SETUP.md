@@ -7,7 +7,7 @@
 **Prerequisites:**
 - Node.js 18+
 - pnpm (or npm/yarn)
-- Supabase account
+- Groq API account
 
 **Installation:**
 ```bash
@@ -17,14 +17,19 @@ cd but-what-if
 # Install dependencies
 pnpm install
 
-# Copy environment template
+# Create environment file
 cp .env.example .env.local
 
-# Add your Supabase credentials to .env.local
-# NEXT_PUBLIC_SUPABASE_URL=your_url
-# NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
-# SUPABASE_SERVICE_ROLE_KEY=your_key
+# Add your Groq API key to .env.local
+GROQ_API_KEY=your_groq_api_key_here
 ```
+
+**Get Groq API Key:**
+1. Go to [console.groq.com](https://console.groq.com)
+2. Sign up or log in
+3. Navigate to API Keys
+4. Create new API key
+5. Copy to `.env.local`
 
 **Run Development Server:**
 ```bash
@@ -33,52 +38,16 @@ pnpm dev
 
 Visit `http://localhost:3000` to see the application.
 
-### 2. Database Setup (Supabase)
+**No database setup required!** All data is stored in browser localStorage.
 
-**Create Tables:**
+### 2. Environment Variables
 
-Run the SQL migrations in Supabase:
-
-1. Go to Supabase Dashboard → SQL Editor
-2. Create new query and run `/scripts/001_create_tables.sql`
-3. Create another query and run `/scripts/002_create_rls_policies.sql`
-
-Or via command line:
+**Required Variable:**
 ```bash
-# Using psql (if you have it installed)
-psql $POSTGRES_URL < scripts/001_create_tables.sql
-psql $POSTGRES_URL < scripts/002_create_rls_policies.sql
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
-**Verify Tables Created:**
-```sql
-SELECT tablename FROM pg_tables WHERE schemaname = 'public';
-```
-
-You should see:
-- conversations
-- messages
-- decision_analytics
-
-### 3. Environment Variables
-
-**Required Variables:**
-```
-NEXT_PUBLIC_SUPABASE_URL          # Your Supabase project URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY     # Supabase anon key
-SUPABASE_SERVICE_ROLE_KEY         # Supabase service role key
-SUPABASE_JWT_SECRET               # JWT secret (from Supabase settings)
-POSTGRES_URL                      # Direct database URL
-```
-
-**Getting Supabase Credentials:**
-1. Go to https://supabase.com and sign in
-2. Create new project or select existing
-3. Go to Settings → API
-4. Copy the URL and keys
-5. Go to Settings → Database to get POSTGRES_URL
-
-### 4. Vercel Deployment
+That's it! Just one environment variable needed.
 
 **One-click Deploy:**
 
@@ -98,77 +67,109 @@ vercel
 # Follow prompts and add environment variables
 ```
 
+### 3. Vercel Deployment
+
+**Using Vercel CLI:**
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+
+# Add GROQ_API_KEY when prompted
+# Or add it in Vercel dashboard after deployment
+
+# Deploy to production
+vercel --prod
+```
+
 **Manual Vercel Setup:**
 1. Push code to GitHub
-2. Go to vercel.com
+2. Go to [vercel.com](https://vercel.com)
 3. Import your repository
-4. Add environment variables in Settings
+4. Add environment variable: `GROQ_API_KEY`
 5. Deploy!
 
-### 5. Testing the Application
+**No database configuration needed!**
+
+### 4. Testing the Application
 
 **Test the Chat:**
-1. Go to `/` (landing page)
-2. Click "Start Debating"
-3. Enter a decision you're making
-4. Submit and wait for response
-5. Continue conversation by entering follow-ups
+1. Go to `http://localhost:3000` (or your deployed URL)
+2. Chat interface loads automatically
+3. Enter a decision or question
+4. Watch AI response stream in real-time
+5. Continue conversation with follow-ups
+6. Test features:
+   - Copy message to clipboard
+   - Clear conversation
+   - Retry failed messages
+   - Check localStorage persistence (refresh page)
 
-**Test the Analytics:**
-1. Go to `/analytics` to see decision history
-2. View mock data and patterns
-3. (Real data will populate once you start making decisions)
+**Test Question Classification:**
+Try different types of questions:
+- Financial: "Should I buy a house?"
+- Career: "Should I quit my job?"
+- Relationship: "Should I get married?"
+- Ethical: "Should I tell the truth?"
+- Lifestyle: "Should I move to another country?"
 
 ## Troubleshooting
 
-### "Cannot find module '@supabase/supabase-js'"
+### "GROQ_API_KEY is not set"
+Make sure your `.env.local` file has:
 ```bash
-pnpm install @supabase/supabase-js @ai-sdk/openai ai @ai-sdk/react
+GROQ_API_KEY=your_key_here
 ```
 
-### "NEXT_PUBLIC_SUPABASE_URL is not set"
-Make sure your `.env.local` file has the variables:
+### "Too many requests" (429 error)
+- You've hit rate limit (10 requests/minute)
+- Wait 60 seconds and try again
+- Or edit `MAX_REQUESTS_PER_MINUTE` in `route.ts`
+
+### "Cannot find module 'groq-sdk'"
 ```bash
-cat .env.local | grep SUPABASE
+pnpm install groq-sdk
 ```
 
-### "401 Unauthorized" errors
-- Check that your Supabase anon key is correct
-- Verify RLS policies are created (check scripts/002_create_rls_policies.sql)
-- Check that rows_security is enabled on tables
+### localStorage not working
+- Check browser privacy settings
+- Ensure cookies/storage not blocked
+- Try incognito mode to test
+- Check browser console for quota errors
 
-### "API response 429 - Rate Limited"
-- OpenAI has rate limits. Wait a moment and retry
-- Upgrade your OpenAI plan for higher limits
-
-### Database Connection Issues
-- Verify POSTGRES_URL is correct
-- Check your IP is allowed in Supabase settings
-- Make sure pool connection settings are correct
+### Streaming not working
+- Check Groq API status: [status.groq.com](https://status.groq.com)
+- Verify API key is valid
+- Check browser console for errors
+- Test with curl command:
+```bash
+curl -X POST http://localhost:3000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"messages":[{"role":"user","content":"test"}]}'
+```
 
 ## Project Structure
 
 ```
 but-what-if/
 ├── app/
-│   ├── api/chat/route.ts          # Chat API with AI streaming
-│   ├── chat/page.tsx              # Chat interface page
-│   ├── analytics/page.tsx          # Analytics dashboard
-│   ├── page.tsx                   # Landing page
+│   ├── api/chat/route.ts          # Mixture of Experts + Groq API
+│   ├── page.tsx                   # Main chat interface
 │   ├── layout.tsx                 # Root layout
 │   └── globals.css                # Global styles
-├── components/
-│   ├── chat-interface.tsx         # Chat UI component
-│   ├── landing-page.tsx           # Landing page component
-│   └── analytics-dashboard.tsx    # Analytics component
-│   └── ui/                        # shadcn/ui components
-├── lib/
-│   └── supabase/
-│       ├── client.ts              # Browser client
-│       └── server.ts              # Server client
-├── scripts/
-│   ├── 001_create_tables.sql      # Database schema
-│   └── 002_create_rls_policies.sql # Security policies
+├── Source Code/
+│   ├── components/
+│   │   ├── chat-interface.tsx     # Chat UI
+│   │   └── ui/                    # shadcn/ui components
+│   ├── lib/
+│   │   ├── constants/
+│   │   │   └── prompts.ts         # Expert prompts
+│   │   ├── types/
+│   │   │   └── index.ts           # TypeScript types
+│   │   └── utils.ts               # Utilities
+│   └── [Documentation]
 ├── .env.example                   # Environment template
 ├── package.json                   # Dependencies
 ├── next.config.mjs                # Next.js config
@@ -186,17 +187,18 @@ but-what-if/
 | React | 19.2.4 | UI library |
 | TypeScript | 5.7.3 | Type safety |
 | Tailwind CSS | 4.2.0 | Styling |
-| AI SDK | 6.0.0+ | AI integration |
-| OpenAI | via Gateway | GPT-4 model |
-| Supabase | v2.47.0 | Database |
+| Groq SDK | 0.37.0 | AI API client |
+| LLaMA 3.3 70B | via Groq | Language model |
 | shadcn/ui | Latest | UI components |
+| localStorage | Browser API | Data persistence |
 
 ## Performance Tips
 
-1. **Streaming**: Responses stream in real-time - no waiting
-2. **Database Indexes**: Already added for common queries
-3. **Code Splitting**: Dynamic imports for larger pages
-4. **Image Optimization**: All images use Next.js Image component
+1. **Streaming**: Groq provides ~200-300 tokens/sec
+2. **localStorage**: Zero-latency data access
+3. **Code Splitting**: Dynamic imports for large components
+4. **No Backend**: All persistence is client-side
+5. **Image Optimization**: Next.js Image component
 5. **CSS**: Tailwind v4 with production optimization
 
 ## Monitoring & Logging
@@ -234,39 +236,38 @@ Edit `components/landing-page.tsx`
 
 ## Production Checklist
 
-- [ ] Environment variables configured in Vercel
-- [ ] Database migrations run successfully
+- [ ] `GROQ_API_KEY` configured in Vercel
 - [ ] SSL certificate enabled (automatic on Vercel)
-- [ ] Database backups enabled in Supabase
+- [ ] Rate limiting tested
+- [ ] Content filtering tested
 - [ ] Error logging configured
 - [ ] Analytics tracking added (optional)
 - [ ] Custom domain configured (optional)
-- [ ] CORS settings verified
-- [ ] Rate limiting configured
-- [ ] Performance tested
+- [ ] Performance tested on mobile
+- [ ] localStorage limits understood
 
 ## Support & Resources
 
 **Documentation:**
 - [Next.js Docs](https://nextjs.org/docs)
-- [AI SDK Docs](https://sdk.vercel.ai)
-- [Supabase Docs](https://supabase.com/docs)
+- [Groq Docs](https://console.groq.com/docs)
+- [LLaMA 3.3](https://www.llama.com/llama3-3/)
 - [shadcn/ui](https://ui.shadcn.com)
 - [Tailwind CSS](https://tailwindcss.com)
 
 **Community:**
-- Join Vercel Discord
-- Follow Supabase community
-- Check GitHub issues
+- Groq Discord
+- Next.js Discord
+- GitHub Discussions
 
 ## Next Steps
 
 1. Deploy to Vercel
 2. Set up custom domain (optional)
-3. Add authentication (optional - Supabase Auth integration)
-4. Implement multi-stage pipeline (optional)
-5. Add outcome tracking
-6. Build analytics features
-7. Consider mobile app
+3. Add cloud sync (optional - requires backend)
+4. Implement export features (PDF, Markdown)
+5. Build analytics dashboard
+6. Add more AI model options
+7. Consider Progressive Web App
 
-Good luck building But, What If...!
+Built with ❤️ using Groq's lightning-fast inference!
