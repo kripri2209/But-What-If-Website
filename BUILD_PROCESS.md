@@ -1,6 +1,108 @@
 # **But, What If... — Build Process**
 
----
+## Build Process Reflection
+
+### How I Started
+The project initially began as a simple decision comparison tool where users could enter multiple options and evaluate them based on different criteria. The early goal was to build a system that could score options and generate a recommendation.
+
+However, during the planning phase the idea evolved into something more interesting. Instead of only ranking options, the system would challenge the user’s thinking. This led to the concept of **“But, What If…”**, where the system plays a devil’s advocate role by identifying risks, questioning assumptions, and revealing potential consequences of decisions.
+
+The project therefore shifted from a basic comparison tool to an **AI-powered decision analysis system**.
+
+
+### How My Thinking Evolved
+During development, I realized that simply generating scores or answers was not enough to create meaningful decision support. The system needed to **analyze decisions from multiple perspectives**.
+
+This led to the introduction of structured reasoning steps such as:
+
+- Question clarification  
+- Assumption detection  
+- Consequence mapping  
+- Alternative generation  
+- Logic stress testing  
+
+Later, the system expanded further to include **multiple expert perspectives**, including:
+
+- Financial
+- Career
+- Relationship
+- Ethical
+- Lifestyle
+- General
+
+This allowed the AI to simulate a broader and more balanced evaluation of user decisions.
+
+
+### Alternative Approaches Considered
+Several alternative approaches were explored during development.
+
+One possible approach was to build a **rule-based decision engine**, where outcomes were determined using predefined formulas and scoring logic. While this approach would have made the system predictable, it would also limit its ability to analyze complex real-world decisions.
+
+Another approach considered was using **multiple AI agents debating with each other** to simulate different viewpoints. However, this would have increased system complexity and API costs significantly.
+
+Instead, the final design used **structured prompting with a mixture-of-experts style reasoning pipeline**, allowing a single model to generate multiple analytical perspectives while keeping the system efficient and manageable.
+
+
+### Refactoring Decisions
+As the project progressed, several parts of the system were refactored to improve maintainability and organization.
+
+Early versions placed much of the logic directly inside the chat interface and API handlers. As the project grew, this made the code harder to maintain. The structure was improved by separating responsibilities into clearer components such as:
+
+- UI components
+- Prompt configuration and constants
+- API processing logic
+
+The reasoning pipeline was also moved into reusable constants so prompts could remain consistent across all expert analyses. This made the system easier to update and extend.
+
+
+### Mistakes and Corrections
+Several issues and mistakes occurred during development and required troubleshooting.
+
+One major issue occurred when the system failed to generate responses due to **depleted OpenAI credits**, which caused the chat interface to stop functioning. To restore functionality, the AI provider was switched to a **Groq model**.
+
+Other technical issues included:
+
+- **API 500 errors** caused by incomplete code in the API route file  
+- **Port conflicts** because Node processes were already using port 3000  
+- **Server restart issues**, where Next.js API route changes required a full restart to take effect  
+
+Additionally, early prompt versions produced responses that were **too lecture-like and educational**. The prompts were rewritten to create a more skeptical and analytical tone that better matched the devil’s advocate concept.
+
+
+### What Changed During Development and Why
+Several aspects of the system evolved significantly during development.
+
+The project name itself was changed from **“Devil’s Advocate”** to **“But, What If…”**. This change made the concept feel less confrontational and more curiosity-driven.
+
+The user interface also went through several iterations before settling on a **strict monochrome black-and-white theme**, which provided a cleaner and more focused visual identity.
+
+Additional features were gradually introduced to improve both usability and analytical depth, including:
+
+- Weighted decision criteria
+- Ranked recommendations
+- Read-more expansion for long responses
+- Conversational detection (greetings, off-topic prompts, insults)
+- Structured reasoning displays
+
+These changes helped transform the system from a simple chatbot into a **structured AI decision-analysis tool**.
+
+### Final Implementation
+By the end of development, the system evolved into a complete **AI-powered decision analysis web application**.
+
+Users can now:
+
+- Enter decisions or ideas
+- Compare multiple options
+- Assign weights to decision criteria
+- Receive structured analysis from multiple expert perspectives
+- View ranked recommendations and final verdicts
+
+While the current implementation provides a functional and interactive decision-analysis tool, there are still several improvements that could be implemented with more time and resources.
+
+These potential improvements are discussed in the **Future Plans** section.
+
+
+----
 
 ## **23 February 2026 – 24 February 2026**
 
