@@ -1,16 +1,13 @@
 # But, What If... - AI-Powered Decision Challenger
+But, What If... is an intelligent decision-making assistant that challenges your assumptions, explores worst-case scenarios, and reveals the hidden complexity of your choices. Instead of encouraging confirmation bias, it acts as a contrarian advisor that helps stress-test decisions before you commit to them.
 
-But, What If... is an intelligent decision-making assistant that challenges your assumptions, explores worst-case scenarios, and reveals the hidden complexity of your choices. Instead of encouraging confirmation bias, it acts as your personal contrarian advisor.
+## Understanding of the Problem
+ 
+Many people make decisions based on limited perspectives, emotional bias, or incomplete information. Traditional AI assistants tend to support the user’s viewpoint, which can reinforce confirmation bias instead of improving decision quality.
 
-## What It Does
+The goal of this project was to build a system that intentionally challenges the user’s thinking. Instead of agreeing with the user, the system analyzes the decision from a skeptical perspective, highlighting risks, hidden assumptions, and possible failure scenarios.
 
-But, What If... uses AI to help you make better decisions by:
-
-1. **Challenging Assumptions** - Identifies the hidden beliefs and biases driving your decision
-2. **Presenting Counterarguments** - Offers powerful opposing viewpoints you may have overlooked
-3. **Exploring Worst Cases** - Details realistic failure modes and disaster scenarios
-4. **Analyzing Hidden Risks** - Uncovers non-obvious costs, consequences, and ripple effects
-5. **Revealing Complexity** - Helps you understand trade-offs and what you're truly missing
+The idea is to simulate a “Devil’s Advocate” style analysis, where every decision is examined critically before it is taken.
 
 ## ScreenShots of Website 
 <img width="1543" height="797" alt="Screenshot 2026-03-08 163137" src="https://github.com/user-attachments/assets/2c3b09ac-9a35-407c-a339-c01dc246ba4f" />
@@ -23,9 +20,25 @@ But, What If... uses AI to help you make better decisions by:
 
 <img width="1007" height="681" alt="Screenshot 2026-03-08 155334" src="https://github.com/user-attachments/assets/34b31b97-172d-4fbc-a209-73ea5e6ab279" />
 
+## Why the Solution Was Structured This Way
+The system was structured to simulate specialized reasoning rather than a single general AI response.
+
+To achieve this, a Mixture of Experts architecture was used.
+Instead of sending every question to the same prompt, the system:
+Classifies the user's question
+Routes it to a specialized expert prompt
+Generates structured reasoning
+Streams the response to the interface
+This structure was chosen because:
+Different domains require different reasoning styles
+Structured prompts produce more consistent and readable responses
+Modular design makes it easier to extend the system with more experts later
+This approach improves the quality and clarity of AI responses.
+
+## Edge Cases Considered
+Provided with more detail in : EDGE_CASE_HANDLING.md
 
 ## Technology Stack
-
 - **Frontend**: Next.js 16 + React 19 + shadcn/ui + Tailwind CSS v4
 - **AI**: Groq (LLaMA 3.3 70B Versatile) with Mixture of Experts routing
 - **Storage**: Browser localStorage for conversation persistence
@@ -33,7 +46,6 @@ But, What If... uses AI to help you make better decisions by:
 - **Real-time**: Groq SDK with streaming responses
 
 ## Architecture
-
 ### Mixture of Experts System
 
 Intelligent question classification routes each query to a specialized expert:
@@ -132,46 +144,7 @@ pnpm dev
 llama-3.3-70b-versatile : Provided by Groq (via their SDK).
 This is Meta's Llama 3.3 model with 70 billion parameters, optimized for versatile reasoning tasks. Groq provides extremely fast inference speeds for this model.
 
-Major Prompt Engineering Techniques:
-1. Role-Based Prompting
-Assigns clear identity: "You are But, What If... — an intelligent contrarian advisor"
-Defines explicit purpose: "Your role is NOT to support... Your role is to stress-test"
-2. Structured Output Format
-Forces 6-section response structure:
-HIDDEN ASSUMPTIONS
-BRUTAL COUNTERARGUMENTS
-FAILURE SCENARIOS
-WHAT THE USER IS IGNORING
-HARD QUESTIONS
-FINAL VERDICT
-3. Task Decomposition
-Breaks complex "challenge thinking" task into specific sub-tasks
-Each section has clear instructions (e.g., "Identify beliefs... Explain why each assumption may be wrong")
-4. Tone Specification
-Explicit tone directive: "Sharp, analytical, skeptical, and psychologically perceptive"
-Negative examples: "Avoid motivational language"
-Clear boundary: "Your job is to challenge, not comfort"
-5. Formatting Instructions
-Bullet points (•) for every point
-Blank lines between sections
-Concise constraints (1-2 sentences max)
-ALL CAPS for section headers
-6. Context-Aware Prompting
-First message: Uses full 6-section structured prompt via runPipeline()
-Follow-ups: Shorter continuation prompt that references previous analysis
-Maintains conversation history with ...messages.map() spread
-7. Behavioral Constraints
-"Do not be polite. Be intellectually honest."
-"Approach every decision as if it could fail"
-"Ask questions that would make a confident person uncomfortable"
-8. Focus Directives
-Lists specific areas: financial, social, emotional, practical risks
-Points to: complexities, second-order consequences, long-term effects
-9. Conditional Logic
-Different prompts for initial vs follow-up messages
-Adapts based on conversation length: if (messages.length === 1)
-
-This is Chain-of-Thought style prompting with strict output formatting and persona engineering.
+This uses Chain-of-Thought style prompting with strict output formatting and persona engineering.
 
 Key Principles:
 - Challenge respectfully but don't sugarcoat
@@ -179,28 +152,6 @@ Key Principles:
 - Identify implicit assumptions, not explicit ones
 - Provide specific counterarguments with examples
 - Help reveal true complexity, not just create doubt
-
-## Development
-
-### Project Structure
-
-```
-/app
-  /api/chat - Chat API route with Groq AI streaming and Mixture of Experts
-  page.tsx - Main chat interface
-  layout.tsx - Root layout
-  globals.css - Global styles
-/Source Code
-  /components
-    chat-interface.tsx - Multi-turn chat UI
-    /ui - shadcn/ui component library
-  /lib
-    /constants
-      prompts.ts - Expert prompts and question classification
-    /types
-      index.ts - TypeScript type definitions
-    utils.ts - Utility functions
-```
 
 ### Customization
 
