@@ -58,65 +58,6 @@ Check if first message or follow-up
                                     Save in database
 ```
 
-## Database Schema Diagram
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    SUPABASE DATABASE                        │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ TABLE: conversations                                │   │
-│  ├─────────────────────────────────────────────────────┤   │
-│  │ id (UUID, PK)         PRIMARY KEY                   │   │
-│  │ user_id (UUID, FK)    → auth.users(id)             │   │
-│  │ title (TEXT)          Chat session title           │   │
-│  │ created_at            Timestamp                    │   │
-│  │ updated_at            Timestamp                    │   │
-│  │                                                      │   │
-│  │ RLS: Users see own conversations only              │   │
-│  │ Indexes: (user_id), (created_at)                   │   │
-│  └─────────────────────────────────────────────────────┘   │
-│              ↓ one-to-many relationship                     │
-│                                                              │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ TABLE: messages                                      │   │
-│  ├─────────────────────────────────────────────────────┤   │
-│  │ id (UUID, PK)                 PRIMARY KEY           │   │
-│  │ conversation_id (UUID, FK)    → conversations(id)  │   │
-│  │ role (TEXT)                   'user' or 'assistant'│   │
-│  │ content (TEXT)                Message text         │   │
-│  │ analysis_data (JSONB)         Stage analysis data  │   │
-│  │ created_at                    Timestamp            │   │
-│  │                                                      │   │
-│  │ RLS: Access via conversation owner                 │   │
-│  │ Indexes: (conversation_id), (created_at)           │   │
-│  └─────────────────────────────────────────────────────┘   │
-│              ↓ one-to-many relationship                     │
-│                                                              │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ TABLE: decision_analytics                            │   │
-│  ├─────────────────────────────────────────────────────┤   │
-│  │ id (UUID, PK)                 PRIMARY KEY           │   │
-│  │ user_id (UUID, FK)            → auth.users(id)     │   │
-│  │ conversation_id (UUID, FK)    → conversations(id)  │   │
-│  │ decision_text (TEXT)          Original decision    │   │
-│  │ assumptions (JSONB)           Analysis result      │   │
-│  │ counterarguments (JSONB)      Analysis result      │   │
-│  │ risks (JSONB)                 Analysis result      │   │
-│  │ decision_date                 When made            │   │
-│  │ outcome (TEXT)                Result of decision   │   │
-│  │ outcome_date                  When outcome known   │   │
-│  │ lesson_learned (TEXT)         Reflection          │   │
-│  │ created_at                    Timestamp            │   │
-│  │                                                      │   │
-│  │ RLS: Users see own analytics only                  │   │
-│  │ Indexes: (user_id), (decision_date)                │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-```
-
 ## Component Tree
 
 ```
@@ -184,7 +125,7 @@ Chat UI Input
     │◀────────────────────────────────────── [DONE] ────────
     │                            │
     │                            └─ Save to DB
-    │                               ├──────────────────────▶ Supabase
+    │                               ├──────────────────────▶ DB
     │                               │  INSERT message
     │                               │◀──────────────────────
     │
