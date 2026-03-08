@@ -268,3 +268,26 @@ Initial attempts only removed **some gradients and colored elements**. Further i
 
 #### **Session Card and Button Styling**
 Early fixes for **session card borders and delete button styling** were inconsistent with the monochrome theme. These elements were refined to maintain **full visual consistency across the interface**.
+
+## **7 March 2026**
+
+A major change was made -- I changed the website anme from Devils Advoacte to "But, What if.."  :  The name was changed from “Devil’s Advocate” to “But, What If…” to make the concept feel more natural and relatable. Instead of sounding confrontational, **the new name reflects the platform’s core idea — prompting users to question assumptions and consider overlooked possibilities through simple curiosity.**
+
+During this update, several improvements were planned and implemented to enhance the functionality, usability, and consistency of the website. The multi-stage reasoning pipeline defined in the constants was fixed so that the system actually uses it during analysis. A Mixture of Experts with Chain-of-Thought reasoning was introduced to improve the quality and transparency of AI responses, and the AI’s reasoning is now displayed alongside its explanations. Interface updates were also made, including ensuring reasoning tabs appear for all messages, adding suggested prompts for users, preventing access to the main site before the intro screen, and introducing a Home button for easier navigation. Additional UI refinements included matching the chat font with the homepage, updating the initial chat message, styling the HOME and CLEAR buttons for consistency, and removing unnecessary icons to maintain a cleaner, more minimal design.
+
+## **8 March 2026**
+Today the system was expanded by introducing a weighted criteria decision system. A new WeightedCriteriaDialog component was created with sliders ranging from 1–10 so users can assign importance to different decision factors. A weights button was added both on message hover and in the input area, and active weights are displayed above the input with visual bars. The backend was also updated so these weights are passed to the API and incorporated into the AI prompts during analysis.
+
+Another major improvement was the introduction of ranked recommendations. A new section titled ---RANKED RECOMMENDATIONS--- was added to all six expert prompts. This section includes a “🏆 Ranked Options (Best to Worst)” structure along with a “💡 Final Verdict” that clearly summarizes the recommended option for the user. These ranked recommendations are now displayed directly in the chat interface to make the results easier to interpret.
+
+A Read More functionality was also implemented to improve readability. If the verdict exceeds 300 characters, the response is automatically truncated with an ellipsis and users can expand it using “Read more” or collapse it using “Show less.” This prevents overly long responses from cluttering the interface while still allowing users to view the full explanation when needed.
+
+To improve the intelligence of interactions, conversational detection systems were implemented. The system can now detect greetings such as “hi,” “hello,” and “good morning,” including combinations like “hi how are you,” and respond with a friendly greeting. A length check was also added to avoid false positives. The system can also detect meta or off-topic questions such as “What model are you?” or “Do you have feelings?” and redirect the conversation back to the decision analysis purpose. In addition, an insult detection system was implemented to recognize offensive or dismissive language and respond calmly while guiding the conversation back to the intended analysis.
+
+Several user experience improvements were also made. Response formatting was improved so that key points appear on separate lines rather than dense paragraphs. The reasoning section was standardized across all six expert perspectives—Financial, Career, Relationship, Ethical, Lifestyle, and General—under a common heading titled “How the AI Evaluated the Decision.” Each expert now follows a consistent five-step reasoning process: question clarification, assumption detection, consequence mapping, alternative generation, and logic stress testing.
+
+Branding adjustments were also introduced. The conversational greeting previously mentioning “But, What If...” was replaced with the phrase “AI-powered decision analysis tool.” However, the original name was retained within the website interface and branding to preserve the identity of the project.
+
+Finally, some file organization and bug fixes were completed. The files ARCHITECTURE.md and ARCHITECTURE_VISUAL.md were moved from the Source Code directory to the project root for better documentation structure. The greeting detection logic was also improved by moving the greeting check before validation, allowing short messages like “hi” to be processed correctly. Regex patterns were enhanced to support greeting combinations and additional filters were added to prevent false detections.
+
+And the website implemetion was done . There were more changes I couldve brought to it , And it is discussed in the **future plans**.
