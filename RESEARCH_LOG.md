@@ -161,7 +161,6 @@ Challenge the user’s thinking aggressively but intelligently.
 
 
 ## 4 March 2026
-<<<<<<< Updated upstream
 
 **(Google)**
 1. https://www.youtube.com/watch?v=ffeaOscUiwU
@@ -197,7 +196,7 @@ Challenge the user’s thinking aggressively but intelligently.
 7. “What are the various edge cases I must consider for my Devil’s Advocate website?”
 8. “If my Devil’s Advocate gives responses like this, what changes would you prefer to see as a user?”
 
-=======
+
 
 **(Google)**
 1. https://www.youtube.com/watch?v=ffeaOscUiwU
@@ -320,7 +319,36 @@ Challenge the user’s thinking aggressively but intelligently.
 (Builder.io)
 1. https://builder.io/signup  
 2. https://www.builder.io/m/design-to-code
-<<<<<<< Updated upstream
-=======
- 
->>>>>>> Stashed changes
+
+
+## **8 March 2026**
+
+(Chatgpt)
+1."Your understanding of the problem
+Assumptions made
+Why you structured the solution the way you did
+Design decisions and trade-offs
+Edge cases considered
+How to run the project
+What you would improve with more time"
+
+2."Based on this edit the below file" (README restructuring request)
+
+3."make this better: # AI Model Improvement Techniques"
+
+4."What i wish i couldve improved on AI used in this chatbot.: rephrase add more lines"
+
+5."there are various areas i couldve brought improvement with time and resources , and i have discussed them below. : more lines"
+
+6."also it must consider like if the user asks absurd questions not having any value like 'are you an AI', 'Can you say your name'... provide this as a prompt only"
+
+7."how does chatgpt analyze this"
+
+8."is OpenAI this feature available as open source"
+
+9."what about user prompts like 'are you foolish' etc bad negative language"
+
+10."does this look like How AI Evaluated This..." (analysis structure question)
+
+
+
