@@ -1,4 +1,4 @@
-# Checkpoint 2 - Working Chat Interface with Devil's Advocate AI
+# Checkpoint 2 - Working Chat Interface with But, What If... AI
 
 ## Date: March 2, 2026
 
@@ -6,13 +6,13 @@
 
 ## What's Working:
 - Chat interface successfully connects to Groq API
-- Devil's Advocate AI responds with structured analysis
+- But, What If... AI responds with structured analysis
 - Bullet-point formatting with proper spacing
 - Error handling and detailed logging
 - Environment variables properly configured
 
 ## Key Features:
-1. **Devil's Advocate AI Character**
+1. **But, What If... AI Character**
    - Sharp, analytical, skeptical tone
    - 6-section structured response format:
      1. HIDDEN ASSUMPTIONS
@@ -45,7 +45,7 @@
 2. Kill any running node processes: `Get-Process -Name node | Stop-Process -Force`
 3. Start dev server: `pnpm run dev`
 4. Visit http://localhost:3000
-5. Submit a decision or dilemma to chat with the Devil's Advocate
+5. Submit a decision or dilemma to chat with But, What If...
 
 ## Known Issues:
 - Middleware deprecation warning (cosmetic, not blocking)

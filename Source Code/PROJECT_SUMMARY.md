@@ -1,8 +1,8 @@
-# Devils Advocate - Project Summary
+# But, What If... - Project Summary
 
 ## Overview
 
-**Devils Advocate** is a sophisticated AI-powered decision analysis tool that helps users make better choices by challenging their assumptions, exploring worst-case scenarios, and revealing hidden complexity. It uses a proprietary 5-stage prompt pipeline to provide deep, nuanced counterarguments.
+**But, What If...** is a sophisticated AI-powered decision analysis tool that helps users make better choices by challenging their assumptions, exploring worst-case scenarios, and revealing hidden complexity.
 
 ## Project Status: 🔄 In Progress
 
@@ -11,14 +11,14 @@ Core features implemented. UI refinements and flow optimization in progress.
 ## What Has Been Built
 
 ### 1. **Frontend** (Next.js 16 + React 19)
-- ✅ Interactive typing intro screen showing "WELCOME TO DEVIL'S ADVOCATE"
+- ✅ Interactive typing intro screen showing "WELCOME TO BUT, WHAT IF..."
 - ✅ Interactive chat interface with real-time streaming
 - ✅ Click-to-skip functionality on intro screen
 - ✅ Responsive design with modern animations
 - 🔄 Navigation system (in progress)
 
 ### 2. **Backend API** (Groq LLaMA 3.3 70B)
-- ✅ Chat API (`/api/chat`) with Devil's Advocate prompt
+- ✅ Chat API (`/api/chat`) with But, What If... prompt
 - ✅ 6-stage analysis: Hidden Assumptions → Counterarguments → Failure Scenarios → What You're Ignoring → Hard Questions → Final Verdict
 - ✅ Streaming response support for real-time feedback
 - ✅ Follow-up message handling for continued debates
@@ -43,7 +43,7 @@ Core features implemented. UI refinements and flow optimization in progress.
 ## Key Features
 
 ### Interactive Typing Intro Screen
-- Displays "WELCOME TO DEVIL'S ADVOCATE" with typing animation
+- Displays "WELCOME TO BUT, WHAT IF..." with typing animation
 - Click-to-skip functionality
 - Never shows again after being skipped (stored in localStorage)
 - Smooth transitions to chat interface
@@ -53,7 +53,7 @@ Core features implemented. UI refinements and flow optimization in progress.
 User Input → Hidden Assumptions → Counterarguments → Failure Scenarios → What You're Ignoring → Hard Questions → Final Verdict
 ```
 
-Each stage builds on the previous one to create a comprehensive Devil's Advocate response.
+Each stage builds on the previous one to create a comprehensive analysis response.
 
 ### Real-Time Chat Interface
 - First message runs full analysis pipeline
@@ -80,7 +80,7 @@ Each stage builds on the previous one to create a comprehensive Devil's Advocate
 ## File Structure
 
 ```
-devils-advocate/
+but-what-if/
 ├── app/
 │   ├── api/chat/route.ts          ← Chat API with Groq
 │   ├── page.tsx                   ← Main entry (ChatInterface)
@@ -100,7 +100,7 @@ devils-advocate/
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | **Frontend** | Next.js 16, React 19, Tailwind CSS | User interface & interactions |
-| **AI** | Groq (LLaMA 3.3 70B) | LLM processing & Devil's Advocate analysis |
+| **AI** | Groq (LLaMA 3.3 70B) | LLM processing & analysis |
 | **Storage** | Browser localStorage | Conversation persistence |
 | **Deployment** | Vercel | Production hosting |
 
@@ -129,7 +129,7 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed steps.
 ## What Users Experience
 
 ✅ Engaging typing intro animation
-✅ AI-powered Devil's Advocate analysis of their ideas
+✅ AI-powered analysis of their ideas
 ✅ Challenge to their hidden assumptions
 ✅ Brutal counterarguments they hadn't considered
 ✅ Failure scenario analysis
@@ -163,9 +163,9 @@ Current benchmarks:
 
 ## Current Features
 
-✅ Interactive typing intro screen with "WELCOME TO DEVIL'S ADVOCATE"
+✅ Interactive typing intro screen with "WELCOME TO BUT, WHAT IF..."
 ✅ Click-to-skip functionality  
-✅ Full chat interface with Devil's Advocate AI
+✅ Full chat interface with But, What If... AI
 ✅ 6-stage analysis pipeline
 ✅ Chat history with localStorage persistence
 ✅ Session management across page reloads
@@ -247,6 +247,6 @@ Built with:
 
 **Status**: 🔄 In Progress
 
-**Current State**: Interactive typing intro screen + Chat interface with Devil's Advocate AI
+**Current State**: Interactive typing intro screen + Chat interface with But, What If... AI
 
 **Next Action**: Continue UI/UX refinements and feature additions

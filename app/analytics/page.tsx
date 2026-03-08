@@ -1,7 +1,7 @@
 import { AnalyticsDashboard } from '@/components/analytics-dashboard'
 
 export const metadata = {
-  title: 'Analytics - Devils Advocate',
+  title: 'Analytics - But, What If...',
   description: 'Track your decisions and decision-making patterns',
 }
 

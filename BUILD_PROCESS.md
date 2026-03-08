@@ -1,4 +1,4 @@
-# **Devil's Advocate — Build Process**
+# **But, What If... — Build Process**
 
 ---
 
@@ -12,7 +12,7 @@ The system was designed to:
 - **Evaluate them using criteria with weights**
 - **Generate an explainable recommendation**
 
-Initially, the idea started as a **simple comparison tool**, but it evolved into a **“Devil’s Advocate” decision system** where the system not only ranks options but also **highlights risks and challenges in the user’s decision**.
+Initially, the idea started as a **simple comparison tool**, but it evolved into a **"But, What If..." decision system** where the system not only ranks options but also **highlights risks and challenges in the user's decision**.
 
 **Initial system components identified:**
 - **Input Layer**
@@ -57,7 +57,7 @@ The **existing chat interface** was temporarily kept the same to maintain system
 
 ### **UI Direction Change**
 The main UI design was redesigned.
-The design shifted from a **generic AI-generated web layout** to a more **structured military-style aesthetic**, which better matched the **analytical nature of the Devil’s Advocate system**.
+The design shifted from a **generic AI-generated web layout** to a more **structured military-style aesthetic**, which better matched the **analytical nature of the But, What If... system**.
 
 ### **Interactive Loading Screen**
 Instead of a static loading page, an **interactive loading experience** was introduced.
@@ -128,7 +128,7 @@ Initially, the AI responses sounded **too lecture-like and educational**.
 The system prompts were rewritten to produce:
 - **More skeptical responses**
 - **Clearer structured outputs**
-- **A stronger Devil’s Advocate tone**
+- **A stronger contrarian tone**
 
 ### **Formatting Issue**
 Bullet points appeared as paragraphs in the UI.
@@ -141,7 +141,7 @@ This was fixed using the CSS property
 The website theme was changed from **dark mode to light mode**.
 
 ### **Response Layout Idea**
-A **tab-style response layout** was explored so the **Devil’s Advocate analysis could appear in organized sections**.
+A **tab-style response layout** was explored so the **analysis could appear in organized sections**.
 
 
 ## **4 March 2026**

@@ -24,7 +24,7 @@ Devils Advocate is an AI-powered decision-making assistant that challenges user 
    - Tracks decision analytics and outcomes
    - Implements Row Level Security for data isolation
 
-## The Devils Advocate Analysis Pipeline
+## The Analysis Pipeline
 
 ### Current Implementation (Simplified)
 
@@ -88,7 +88,7 @@ Stage 4: Risk Analysis Prompt
 Stage 5: Synthesis Prompt
 (Create comprehensive response)
     ↓
-Final Devils Advocate Response
+Final Response
 ```
 
 To implement this, modify `/api/chat/route.ts` to chain multiple `generateText` calls sequentially before returning the final synthesis.
@@ -285,4 +285,4 @@ Track:
 
 ## Conclusion
 
-Devils Advocate combines modern web technologies with sophisticated prompt engineering to create an AI assistant that genuinely challenges user thinking. The architecture is extensible for future enhancements while maintaining simplicity and performance in the current implementation.
+But, What If... combines modern web technologies with sophisticated prompt engineering to create an AI assistant that genuinely challenges user thinking.

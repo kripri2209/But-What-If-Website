@@ -45,7 +45,7 @@ export function LandingPage() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
               <AlertCircle className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-white font-[family-name:var(--font-playfair)]">Devils Advocate</span>
+            <span className="text-xl font-bold text-white font-[family-name:var(--font-playfair)]">But, What If...</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/analytics">
@@ -70,7 +70,7 @@ export function LandingPage() {
               Make better decisions by questioning everything
             </h1>
             <p className="text-xl text-slate-300 mb-8 leading-relaxed">
-              Devils Advocate is an AI that challenges your assumptions, explores worst-case scenarios, and reveals the hidden complexity of your choices. Stop making decisions in a vacuum.
+              But, What If... is an AI that challenges your assumptions, explores worst-case scenarios, and reveals the hidden complexity of your choices. Stop making decisions in a vacuum.
             </p>
             <div className="flex gap-4">
               <Link href="/chat">
@@ -101,7 +101,7 @@ export function LandingPage() {
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-white mb-4">How It Works</h2>
           <p className="text-xl text-slate-400">
-            Devils Advocate analyzes your decision through multiple lenses
+            But, What If... analyzes your decision through multiple lenses
           </p>
         </div>
 
@@ -162,7 +162,7 @@ export function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-slate-700 bg-slate-800/50">
         <div className="max-w-6xl mx-auto px-6 py-8 text-center text-slate-400">
-          <p className="text-sm">Devils Advocate - Making you a better decision maker</p>
+          <p className="text-sm">But, What If... - Making you a better decision maker</p>
           <p className="text-xs text-slate-500 mt-2">AI-powered decision intelligence © 2026</p>
         </div>
       </footer>

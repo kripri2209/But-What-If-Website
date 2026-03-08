@@ -1,4 +1,4 @@
-# Devils Advocate - File Index
+# But, What If... - File Index
 
 Complete reference of all project files and their purposes.
 
@@ -79,7 +79,7 @@ All components in `components/ui/` are shadcn/ui components and should not be ma
 ## 🎯 Key Directories
 
 ```
-devils-advocate/
+but-what-if/
 ├── app/                 # Next.js app directory
 │   ├── api/            # API routes
 │   ├── chat/           # Chat page

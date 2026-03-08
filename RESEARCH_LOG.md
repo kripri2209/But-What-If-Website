@@ -161,6 +161,7 @@ Challenge the user’s thinking aggressively but intelligently.
 
 
 ## 4 March 2026
+<<<<<<< Updated upstream
 
 **(Google)**
 1. https://www.youtube.com/watch?v=ffeaOscUiwU
@@ -196,6 +197,42 @@ Challenge the user’s thinking aggressively but intelligently.
 7. “What are the various edge cases I must consider for my Devil’s Advocate website?”
 8. “If my Devil’s Advocate gives responses like this, what changes would you prefer to see as a user?”
 
+=======
+
+**(Google)**
+1. https://www.youtube.com/watch?v=ffeaOscUiwU
+2. https://www.youtube.com/results?search_query=add+pictures+onto+github+repository
+3. https://www.youtube.com/shorts/bofB_wCj6Go
+4. https://github.com/kripri2209/But-What-If-Website/tree/main
+
+
+## 5 March 2026
+
+**(ChatGPT)**
+1. “How can I allow users to skip the typing animation screen when they click anywhere on the screen?”
+2. “How do I add a ‘CLICK TO SKIP’ indicator to the animation screen?”
+3. “How do I make sure skipping the intro animation immediately opens the chat interface?”
+4. “What UX edge cases should I consider for a Devil’s Advocate decision-making website?”
+5. “What logical edge cases should I consider when the user input is already critical of their own idea?”
+6. “What system or API edge cases should I consider for an AI chat-based decision system?”
+
+**(YouTube)**
+1. https://www.youtube.com/watch?v=ffeaOscUiwU
+2. https://www.youtube.com/shorts/bofB_wCj6Go
+
+
+## 6 March 2026
+
+**(ChatGPT)**
+1. “How can I convert my website UI to a pure black-and-white (monochrome) theme?”
+2. “How do I remove all gradients, colored text, and colored borders from my UI?”
+3. “How can I update the system message so it sounds more conversational and fits the Devil’s Advocate concept?”
+4. “How can I adjust the logic so the intro screen and orbital screen appear only at the beginning?”
+5. “How can skipping either intro screen immediately transition to the chat interface?”
+6. “How do I fix session card borders, delete button styling, and error message colors to match the monochrome UI?”
+7. “What are the various edge cases I must consider for my Devil’s Advocate website?”
+8. “If my Devil’s Advocate gives responses like this, what changes would you prefer to see as a user?”
+>>>>>>> Stashed changes
 
 ## **7 March 2026**
 
@@ -270,3 +307,7 @@ Challenge the user’s thinking aggressively but intelligently.
 (Builder.io)
 1. https://builder.io/signup  
 2. https://www.builder.io/m/design-to-code
+<<<<<<< Updated upstream
+=======
+ 
+>>>>>>> Stashed changes

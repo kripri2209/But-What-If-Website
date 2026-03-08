@@ -1,4 +1,4 @@
-# Devils Advocate - Setup & Deployment Guide
+# But, What If... - Setup & Deployment Guide
 
 ## Quick Start
 
@@ -12,7 +12,7 @@
 **Installation:**
 ```bash
 # Clone or open the project
-cd devils-advocate
+cd but-what-if
 
 # Install dependencies
 pnpm install
@@ -84,7 +84,7 @@ POSTGRES_URL                      # Direct database URL
 
 Click the button below to deploy to Vercel:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyourname%2Fdevils-advocate)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyourname%2Fbut-what-if)
 
 Or deploy manually:
 
@@ -111,7 +111,7 @@ vercel
 1. Go to `/` (landing page)
 2. Click "Start Debating"
 3. Enter a decision you're making
-4. Submit and wait for Devils Advocate response
+4. Submit and wait for response
 5. Continue conversation by entering follow-ups
 
 **Test the Analytics:**
@@ -149,7 +149,7 @@ cat .env.local | grep SUPABASE
 ## Project Structure
 
 ```
-devils-advocate/
+but-what-if/
 ├── app/
 │   ├── api/chat/route.ts          # Chat API with AI streaming
 │   ├── chat/page.tsx              # Chat interface page
@@ -269,4 +269,4 @@ Edit `components/landing-page.tsx`
 6. Build analytics features
 7. Consider mobile app
 
-Good luck building Devils Advocate!
+Good luck building But, What If...!

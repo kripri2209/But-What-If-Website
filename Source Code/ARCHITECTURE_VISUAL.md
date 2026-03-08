@@ -1,4 +1,4 @@
-# Devils Advocate - Visual Architecture Guide
+# But, What If... - Visual Architecture Guide
 
 ## System Architecture Diagram
 
@@ -402,4 +402,4 @@ OpenAI (External)
 ---
 ```
 
-This visual architecture shows how all components of Devils Advocate work together to deliver the 5-stage analysis pipeline with real-time streaming responses!
+This visual architecture shows how all components of But, What If... work together to deliver the analysis pipeline with real-time streaming responses!

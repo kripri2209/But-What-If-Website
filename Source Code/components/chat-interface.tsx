@@ -8,6 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { LandingPageNew } from './landing-page-new';
 
 interface ChatMessage {
   role: "user" | "assistant" | "system";
@@ -55,7 +56,7 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
         ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
         ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
         li: ({ children }) => <li className="ml-2">{children}</li>,
-        strong: ({ children }) => <strong className="font-bold text-black">{children}</strong>,
+           strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
         em: ({ children }) => <em className="italic">{children}</em>,
         blockquote: ({ children }) => (
           <blockquote className="border-l-4 border-gray-300 pl-4 italic my-2">{children}</blockquote>
@@ -71,7 +72,7 @@ const getInitialMessages = (): ChatMessage[] => [
   {
     role: "system",
     content:
-      "Devil's Advocate here. Tell me what you think is a good idea, and I'll tell you what you're missing.",
+      "Got an idea? Let’s think it through.",
   },
 ];
 
@@ -89,9 +90,10 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
   const [error, setError] = useState<string | null>(null);
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
   const [retryMessageIndex, setRetryMessageIndex] = useState<number | null>(null);
-  const [showIntro, setShowIntro] = useState(false);
   const [showOrbitalDots, setShowOrbitalDots] = useState(false);
+  const [showLandingPage, setShowLandingPage] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [expandedMessages, setExpandedMessages] = useState<Set<number>>(new Set());
   const [activeTab, setActiveTab] = useState<Map<number, string>>(new Map());
   
@@ -218,8 +220,7 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
     try {
       await navigator.clipboard.writeText(content);
       toast({
-        title: "Copied to clipboard",
-        description: "Message copied successfully",
+        title: "Copied!",
       });
     } catch (err) {
       toast({
@@ -382,7 +383,7 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
   }, []);
   
   const introQuestions = [
-    "DEVILS ADVOCATE",
+    "BUT WHAT IF",
     "WHAT IF I'M WRONG?",
     "WHY DO I BELIEVE THIS?",
     "WHAT AM I IGNORING?",
@@ -393,15 +394,15 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
     "WHAT'S THE HIDDEN COST?",
     "WHOSE VOICE IS MISSING?"
   ];
-  const [introText, setIntroText] = useState("WELCOME TO DEVIL'S ADVOCATE");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Check if intro should be shown (after mount to avoid hydration issues)
   useEffect(() => {
-    const introSeen = localStorage.getItem('introSeen');
-    if (introSeen !== 'true') {
-      setShowIntro(true);
-    }
+    // Clear intro skip flag on page load so intro shows on every reload
+    sessionStorage.removeItem('introSkipped');
+    // Always show orbital dots on page load
+    setShowOrbitalDots(true);
+    setIsInitialized(true);
   }, []);
 
   useEffect(() => {
@@ -409,52 +410,20 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
   }, [messages]);
 
   useEffect(() => {
-    if (!showIntro) return;
-    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-    const typeFlow = async () => {
-      const textElement = document.getElementById("text");
-      const cursor = document.getElementById("cursor");
-      const body = document.getElementById("typing-body");
-      if (!textElement || !cursor || !body) return;
-      const fullText = introText;
-      for (let i = 0; i <= fullText.length; i++) {
-        textElement.innerText = fullText.slice(0, i);
-        await sleep(150);
-      }
-      await sleep(2000);
-      // Delete last word (after last space)
-      const lastSpace = fullText.lastIndexOf(" ");
-      for (let i = fullText.length; i >= lastSpace + 1; i--) {
-        textElement.innerText = fullText.slice(0, i);
-        await sleep(100);
-      }
-      await sleep(2000);
-      // Delete everything
-      for (let i = lastSpace + 1; i >= 0; i--) {
-        textElement.innerText = fullText.slice(0, i);
-        await sleep(100);
-      }
-      await sleep(2000);
-      body.classList.add("black-screen");
-      textElement.style.display = "none";
-      cursor.style.display = "none";
-      await sleep(2000);
-      setShowIntro(false);
-      setShowOrbitalDots(true);
-    };
-    const timer = setTimeout(typeFlow, 100);
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [showIntro]);
-
-  useEffect(() => {
     if (!showOrbitalDots) return;
     const timer = setTimeout(() => {
       setShowOrbitalDots(false);
+      setShowLandingPage(true); // Show landing page after orbital dots
     }, 35000);
     return () => clearTimeout(timer);
   }, [showOrbitalDots]);
+
+  // Prevent initial render flash - show blank screen until initialized
+  if (!isInitialized) {
+    return (
+      <div className="fixed inset-0" style={{ background: "#0a0a0a" }} />
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -526,103 +495,16 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
     await submitMessage(userMessage);
   };
 
-  if (showIntro) {
-    return (
-      <>
-        <div
-          id="typing-body"
-          onClick={() => {
-            if (onSkip) {
-              onSkip();
-            } else {
-              // Mark intro as seen so it never shows again
-              localStorage.setItem('introSeen', 'true');
-              setShowIntro(false);
-              setShowOrbitalDots(false);
-            }
-          }}
-          style={{
-            margin: 0,
-            padding: 0,
-            height: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            background: "#ffffff",
-            color: "#1f2937",
-            fontFamily:
-              "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
-            fontSize: "13px",
-            letterSpacing: "0.35em",
-            fontWeight: 300,
-            overflow: "hidden",
-            transition: "opacity 2s ease",
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            zIndex: 9999,
-            cursor: "pointer",
-          }}
-        >
-          <div id="text-container" style={{ display: "flex", alignItems: "center" }}>
-            <span id="text"></span>
-            <span
-              id="cursor"
-              className="cursor"
-              style={{
-                display: "inline-block",
-                width: "2px",
-                height: "1.5em",
-                backgroundColor: "#1f2937",
-                marginLeft: "5px",
-                animation: "blink 1s infinite",
-              }}
-            ></span>
-          </div>
-          <div style={{
-            position: "absolute",
-            bottom: "3rem",
-            left: "50%",
-            transform: "translateX(-50%)",
-          }}>
-            <p style={{
-              color: "#9ca3af",
-              fontSize: "12px",
-              letterSpacing: "0.2em",
-              textTransform: "uppercase",
-              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-              fontWeight: 300,
-            }}>
-              Click to skip
-            </p>
-          </div>
-        </div>
-        <style jsx global>{`
-          @keyframes blink {
-            50% {
-              opacity: 0;
-            }
-          }
-          .black-screen {
-            background: #ffffff !important;
-            opacity: 0.3 !important;
-          }
-        `}</style>
-      </>
-    );
-  }
-
   if (showOrbitalDots) {
     return (
       <div
         className="fixed inset-0 flex items-center justify-center cursor-pointer overflow-hidden z-[9999]"
-        style={{ background: "#ffffff" }}
+        style={{ background: "#0a0a0a" }}
         onClick={() => {
-          // Mark intro as seen so it never shows again
-          localStorage.setItem('introSeen', 'true');
+          // Skip orbital dots, go to landing page (only for this session)
+          sessionStorage.setItem('introSkipped', 'true');
           setShowOrbitalDots(false);
-          setShowIntro(false);
+          setShowLandingPage(true);
         }}
       >
         <div className="relative w-full h-full flex items-center justify-center">
@@ -648,7 +530,7 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
                     style={{
                       width: '10px',
                       height: '10px',
-                      background: '#000000',
+                      background: '#6867e7',
                       borderRadius: '50%',
                       boxShadow: '0 0 20px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.2)'
                     }}
@@ -675,7 +557,7 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
                   letterSpacing: '0.35em',
                   padding: '0 2rem',
                   textAlign: 'center',
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+                  fontFamily: '\'DM Sans\', -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif',
                   fontWeight: 400
                 }}
               >
@@ -723,7 +605,7 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
               fontSize: '12px',
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
-              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+              fontFamily: '\'DM Sans\', -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif',
               fontWeight: 300
             }}
           >
@@ -783,17 +665,29 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
     );
   }
 
+  // Show landing page after orbital dots
+  if (showLandingPage) {
+    return (
+      <LandingPageNew 
+        onStartChat={() => {
+          sessionStorage.setItem('introSkipped', 'true');
+          setShowLandingPage(false);
+        }} 
+      />
+    );
+  }
+
   return (
-    <div className="flex h-screen" style={{ background: "#ffffff", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" }}>
+    <div className="flex h-screen" style={{ background: "#0a0a0a", fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
       {/* Chat History Sidebar */}
       {sidebarOpen && (
-        <div className="w-80 border-r flex flex-col" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", background: "rgba(255, 255, 255, 0.8)", backdropFilter: "blur(40px)", borderColor: "rgba(226, 232, 240, 0.8)" }}>
+        <div className="w-80 border-r flex flex-col" style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: "rgba(17, 17, 17, 0.95)", backdropFilter: "blur(40px)", borderColor: "rgba(42, 42, 42, 0.8)" }}>
           {/* Sidebar Header */}
-          <div className="border-b p-4" style={{ borderColor: "rgba(226, 232, 240, 0.8)" }}>
+          <div className="border-b p-4" style={{ borderColor: "rgba(42, 42, 42, 0.8)" }}>
             <button
               onClick={createNewChat}
               className="w-full text-white py-3 rounded-lg transition-all hover:opacity-90 shadow-lg"
-              style={{ background: "#000000", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300, boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)" }}
+              style={{ background: "#6867e7", fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300, boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)" }}
             >
               + NEW CHAT
             </button>
@@ -802,7 +696,7 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
           {/* Chat History List */}
           <div className="flex-1 overflow-y-auto p-3">
             {chatSessions.length === 0 ? (
-              <p className="text-center mt-8" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300, color: "#9ca3af" }}>No chat history</p>
+              <p className="text-center mt-8" style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300, color: "#999" }}>No chat history</p>
             ) : (
               <div className="space-y-2">
                 {chatSessions.map(session => (
@@ -815,23 +709,23 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
                     }`}
                     style={{ 
                       background: session.id === currentChatId 
-                        ? '#f3f4f6' 
-                        : 'rgba(248, 250, 252, 0.8)',
-                      borderColor: session.id === currentChatId ? '#d1d5db' : 'rgba(226, 232, 240, 0.6)',
+                        ? '#1a1a1a' 
+                        : 'rgba(20, 20, 20, 0.5)',
+                      borderColor: session.id === currentChatId ? '#6867e7' : 'rgba(42, 42, 42, 0.6)',
                       boxShadow: session.id === currentChatId ? '0 4px 6px rgba(0, 0, 0, 0.1)' : 'none',
-                      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+                      fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
                     }}
                     onClick={() => switchChat(session.id)}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="truncate" style={{ fontSize: "11px", letterSpacing: "0.15em", fontWeight: 300, color: session.id === currentChatId ? '#000000' : '#64748b' }}>
+                        <p className="truncate" style={{ fontSize: "11px", letterSpacing: "0.15em", fontWeight: 300, color: session.id === currentChatId ? '#FFFFFF' : '#999' }}>
                           {session.title}
                         </p>
-                        <p className="mt-1" style={{ fontSize: "10px", letterSpacing: "0.1em", fontWeight: 300, color: session.id === currentChatId ? '#4b5563' : '#94a3b8' }}>
+                        <p className="mt-1" style={{ fontSize: "10px", letterSpacing: "0.1em", fontWeight: 300, color: session.id === currentChatId ? '#ccc' : '#777' }}>
                           {new Date(session.createdAt).toLocaleDateString()} {new Date(session.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
-                        <p className="text-gray-600 mt-1" style={{ fontSize: "10px", letterSpacing: "0.1em", fontWeight: 300, color: "#94a3b8" }}>
+                        <p className="text-gray-600 mt-1" style={{ fontSize: "10px", letterSpacing: "0.1em", fontWeight: 300, color: "#777" }}>
                           {session.messages.filter(m => m.role !== 'system').length} messages
                         </p>
                       </div>
@@ -842,7 +736,7 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
                             deleteChat(session.id);
                           }
                         }}
-                        className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-black transition-opacity text-sm font-bold"
+                        className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-white transition-opacity text-sm font-bold"
                         aria-label="Delete chat"
                       >
                         ×
@@ -855,8 +749,8 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
           </div>
           
           {/* Sidebar Footer */}
-          <div className="border-t p-3" style={{ borderColor: "rgba(226, 232, 240, 0.8)" }}>
-            <p className="text-gray-600 text-center" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "10px", letterSpacing: "0.2em", fontWeight: 300, color: "#94a3b8" }}>
+          <div className="border-t p-3" style={{ borderColor: "rgba(42, 42, 42, 0.8)" }}>
+            <p className="text-gray-600 text-center" style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontSize: "10px", letterSpacing: "0.2em", fontWeight: 300, color: "#777" }}>
               {chatSessions.length} {chatSessions.length === 1 ? 'CHAT' : 'CHATS'} SAVED
             </p>
           </div>
@@ -866,34 +760,62 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="border-b py-4" style={{ background: "rgba(255, 255, 255, 0.7)", backdropFilter: "blur(40px)", borderColor: "rgba(226, 232, 240, 0.8)" }}>
+        <div className="border-b py-4" style={{ background: "rgba(17, 17, 17, 0.9)", backdropFilter: "blur(40px)", borderColor: "rgba(42, 42, 42, 0.8)" }}>
           <div className="flex items-center justify-between px-8">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="transition-colors"
-              style={{ color: "#000000", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300 }}
-              onMouseEnter={(e) => e.currentTarget.style.color = "#4b5563"}
-              onMouseLeave={(e) => e.currentTarget.style.color = "#000000"}
+              style={{ color: "#FFFFFF", fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300 }}
+              onMouseEnter={(e) => e.currentTarget.style.color = "#6867e7"}
+              onMouseLeave={(e) => e.currentTarget.style.color = "#FFFFFF"}
             >
               {sidebarOpen ? '▶ HIDE' : '◀ HISTORY'}
             </button>
             <p className="text-center flex-1" style={{ 
-              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", 
+              fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", 
               fontSize: "15px", 
               letterSpacing: "0.35em", 
               fontWeight: 300,
-              color: "#000000"
+              color: "#FFFFFF"
             }}>
-              Devil's Advocate
+              But, What If...
             </p>
-            <button
-              onClick={clearConversation}
-              className="transition-colors hover:text-red-600"
-              style={{ color: "#6b7280", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300 }}
-              title="Clear conversation"
-            >
-              🗑 CLEAR
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowLandingPage(true)}
+                className="transition-colors px-4 py-2 rounded shadow-md border border-transparent"
+                style={{
+                  background: '#7dba86',
+                  color: '#222',
+                  fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  letterSpacing: "0.02em",
+                  boxShadow: '0 2px 6px rgba(125,186,134,0.15)',
+                  transition: 'background 0.2s, color 0.2s',
+                }}
+                title="Back to homepage"
+              >
+                Home
+              </button>
+              <button
+                onClick={clearConversation}
+                className="transition-colors px-4 py-2 rounded shadow-md border border-transparent"
+                style={{
+                  background: '#e0c4c4',
+                  color: '#222',
+                  fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  letterSpacing: "0.02em",
+                  boxShadow: '0 2px 6px rgba(224,196,196,0.15)',
+                  transition: 'background 0.2s, color 0.2s',
+                }}
+                title="Clear conversation"
+              >
+                Clear
+              </button>
+            </div>
           </div>
         </div>
         
@@ -901,15 +823,32 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
         <div className="flex-1 overflow-y-auto py-8 space-y-8 relative">
           <div className="max-w-5xl mx-auto px-8">
             {messages.map((message, idx) => {
-              // Parse response for three-part format
+              // Parse response for four-part format: REASONING -> verdict -> DETAILED -> OPTIONS
               const parseResponse = (content: string) => {
+                // Split by ---REASONING---
+                const hasReasoning = content.includes('---REASONING---');
+                let reasoning = null;
+                let contentAfterReasoning = content;
+                
+                if (hasReasoning) {
+                  const reasoningParts = content.split('---REASONING---');
+                  contentAfterReasoning = reasoningParts[1] || content;
+                  
+                  // Extract reasoning section (between ---REASONING--- and ---DETAILED---)
+                  if (contentAfterReasoning.includes('---DETAILED---')) {
+                    const reasoningEndParts = contentAfterReasoning.split('---DETAILED---');
+                    reasoning = reasoningEndParts[0]?.trim() || null;
+                    contentAfterReasoning = reasoningEndParts.join('---DETAILED---');
+                  }
+                }
+                
                 // Split by ---DETAILED---
-                const mainParts = content.split('---DETAILED---');
+                const mainParts = contentAfterReasoning.split('---DETAILED---');
                 const verdict = mainParts[0]?.trim() || content;
                 const afterDetailed = mainParts[1]?.trim() || null;
                 
                 if (!afterDetailed) {
-                  return { verdict, details: null, options: [] };
+                  return { verdict, reasoning, details: null, options: [] };
                 }
                 
                 // Check if there's an ---OPTIONS--- section
@@ -989,18 +928,19 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
                 // Debug logging
                 if (process.env.NODE_ENV === 'development') {
                   console.log('Parsed response:', { 
+                    hasReasoning: !!reasoning,
                     hasDetails: !!details, 
                     optionsCount: options.length,
                     options: options.map(o => ({ title: o.title, prosCount: o.pros.length, consCount: o.cons.length }))
                   });
                 }
                 
-                return { verdict, details, options };
+                return { verdict, reasoning, details, options };
               };
               
-              const { verdict, details, options } = message.role === "assistant" 
+              const { verdict, reasoning, details, options } = message.role === "assistant" 
                 ? parseResponse(message.content) 
-                : { verdict: message.content, details: null, options: [] };
+                : { verdict: message.content, reasoning: null, details: null, options: [] };
               const isExpanded = expandedMessages.has(idx);
               const currentTab = activeTab.get(idx) || 'detailed';
               
@@ -1013,61 +953,28 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
                   <div
                     className={`max-w-3xl rounded px-5 py-3 border ${
                       message.role === "system"
-                        ? "border-gray-200"
+                        ? "border-gray-700"
                         : message.role === "user"
-                        ? "border-gray-200"
-                        : "border-gray-200"
+                        ? "border-gray-700"
+                        : "border-gray-700"
                     } relative group`}
                     style={{
                       background: message.role === "user" 
-                        ? "#f9fafb"
-                        : "rgba(255, 255, 255, 0.8)",
+                        ? "#1a1a1a"
+                        : "rgba(20, 20, 20, 0.9)",
                       backdropFilter: "blur(20px)"
                     }}
                   >
-                    {/* Copy button for all messages */}
-                    <button
-                      onClick={() => copyMessage(message.content)}
-                      className="absolute top-2 right-2 transition-all px-1 py-0.5 rounded text-xs bg-gray-100 hover:bg-gray-200 border border-gray-300"
-                      style={{ 
-                        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
-                        fontSize: "8px",
-                        letterSpacing: "0.03em",
-                        color: "#374151"
-                      }}
-                      title="Copy message"
-                    >
-                      📋
-                    </button>
-                    
-                    {/* Retry button for user messages that have an error response */}
-                    {message.role === "user" && idx < messages.length - 1 && 
-                     messages[idx + 1]?.content.includes("**System Error:**") && (
-                      <button
-                        onClick={() => retryMessage(idx)}
-                        className="absolute top-2 right-10 transition-all px-1 py-0.5 rounded text-xs bg-red-50 hover:bg-red-100 border border-red-300"
-                        style={{ 
-                          fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
-                          fontSize: "8px",
-                          letterSpacing: "0.03em",
-                          color: "#dc2626"
-                        }}
-                        title="Retry this message"
-                      >
-                        🔄
-                      </button>
-                    )}
-                    
-                    <div className={`leading-relaxed ${message.role === "user" ? "text-gray-800" : "text-gray-800"}`} style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
+                    <div className={`leading-relaxed ${message.role === "user" ? "text-white" : "text-white"}`} style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
                       <MarkdownRenderer content={verdict} />
                     </div>
                     
                     {/* Expandable section with tabs for options */}
-                    {(details || options.length > 0) && message.role === "assistant" && (
+                    {(reasoning || details || options.length > 0) && message.role === "assistant" && (
                       <div className="mt-3">
                         {/* Tab buttons */}
                         <div className="flex flex-wrap gap-2 justify-between items-center">
-                          {/* Option tabs on the left */}
+                          {/* Option tabs */}
                           <div className="flex flex-wrap gap-2">
                             {options.map((option, optIdx) => (
                               <button
@@ -1082,45 +989,39 @@ export function ChatInterface({ showIntroOnly = false, onSkip }: { showIntroOnly
                                 }}
                                 className={`px-3 py-1 rounded border transition-all ${
                                   currentTab === `option-${optIdx}` && isExpanded 
-                                    ? 'text-white border-black' 
-                                    : 'text-gray-600 border-gray-300 hover:border-black hover:text-gray-800'
+                                    ? 'text-white border-purple-500' 
+                                    : 'text-gray-400 border-gray-600 hover:border-purple-500 hover:text-white'
                                 }`}
                                 style={{ 
-                                  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", 
+                                  fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", 
                                   fontSize: "11px", 
                                   letterSpacing: "0.15em", 
                                   fontWeight: 300,
                                   background: currentTab === `option-${optIdx}` && isExpanded 
-                                    ? "#000000"
-                                    : "rgba(248, 250, 252, 0.8)"
+                                    ? "#6867e7"
+                                    : "rgba(30, 30, 30, 0.8)"
                                 }}
                               >
                                 {option.title}
                               </button>
                             ))}
                           </div>
-                          
-                          {/* Explain the decision on the right */}
-                          {details && (
-                            <button
-                              onClick={() => {
-                                toggleMessageExpansion(idx);
-                                setMessageTab(idx, 'detailed');
-                              }}
-                              className={`transition-colors ${
-currentTab === 'detailed' && isExpanded ? 'underline' : 'text-gray-500 hover:text-gray-700'}`}
-                              style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300, color: currentTab === 'detailed' && isExpanded ? '#000000' : undefined }}
-                            >
-                              {isExpanded && currentTab === 'detailed' ? '▲ Hide details' : '▼ Explain the decision'}
-                            </button>
-                          )}
                         </div>
                         
                         {/* Tab content */}
                         {isExpanded && (
-                          <div className="mt-3 pt-3 border-t border-gray-200">
+                          <div className="mt-3 pt-3 border-t border-gray-700">
+                            {currentTab === 'reasoning' && reasoning && (
+                              <div className="leading-relaxed text-gray-300" style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
+                                <div className="mb-2 text-blue-400 font-semibold uppercase tracking-wide text-xs">
+                                  How AI Evaluated This
+                                </div>
+                                <MarkdownRenderer content={reasoning} />
+                              </div>
+                            )}
+                            
                             {currentTab === 'detailed' && details && (
-                              <div className="leading-relaxed text-gray-700" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
+                              <div className="leading-relaxed text-gray-300" style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
                                 <MarkdownRenderer content={details} />
                               </div>
                             )}
@@ -1132,17 +1033,17 @@ currentTab === 'detailed' && isExpanded ? 'underline' : 'text-gray-500 hover:tex
                                 if (!option) return null;
                                 
                                 return (
-                                  <div className="space-y-3" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
-                                    <p className="text-gray-700 leading-relaxed">
+                                  <div className="space-y-3" style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontSize: "13px", letterSpacing: "normal", fontWeight: 300 }}>
+                                    <p className="text-gray-300 leading-relaxed">
                                       {option.description}
                                     </p>
                                     
                                     {option.pros.length > 0 && (
                                       <div>
-                                        <p className="text-black font-semibold mb-1">PROS:</p>
+                                        <p className="text-white font-semibold mb-1">PROS:</p>
                                         <ul className="list-none space-y-1">
                                           {option.pros.map((pro, i) => (
-                                            <li key={i} className="text-gray-700">• {pro}</li>
+                                            <li key={i} className="text-gray-300">• {pro}</li>
                                           ))}
                                         </ul>
                                       </div>
@@ -1150,10 +1051,10 @@ currentTab === 'detailed' && isExpanded ? 'underline' : 'text-gray-500 hover:tex
                                     
                                     {option.cons.length > 0 && (
                                       <div>
-                                        <p className="text-black font-semibold mb-1">CONS:</p>
+                                        <p className="text-white font-semibold mb-1">CONS:</p>
                                         <ul className="list-none space-y-1">
                                           {option.cons.map((con, i) => (
-                                            <li key={i} className="text-gray-700">• {con}</li>
+                                            <li key={i} className="text-gray-300">• {con}</li>
                                           ))}
                                         </ul>
                                       </div>
@@ -1166,14 +1067,79 @@ currentTab === 'detailed' && isExpanded ? 'underline' : 'text-gray-500 hover:tex
                         )}
                       </div>
                     )}
+                    
+                    {/* Action buttons at bottom - show on hover - hide for first system message */}
+                    {!(message.role === "system" && idx === 0) && (
+                      <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-800 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => copyMessage(message.content)}
+                          className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors p-1 rounded hover:bg-gray-700"
+                          title="Copy message"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                          </svg>
+                        </button>
+                        
+                        {/* Explain the decision button */}
+                        {details && (
+                          <button
+                            onClick={() => {
+                              toggleMessageExpansion(idx);
+                              setMessageTab(idx, 'detailed');
+                            }}
+                            className="text-xs text-gray-400 hover:text-white transition-colors"
+                            style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontSize: "10px", letterSpacing: "0.15em", fontWeight: 300 }}
+                            title="Explain the decision"
+                          >
+                            {isExpanded && currentTab === 'detailed' ? '▲ HIDE DETAILS' : '▼ EXPLAIN'}
+                          </button>
+                        )}
+                        
+                        {/* Thought Process button */}
+                        {reasoning && (
+                          <button
+                            onClick={() => {
+                              if (currentTab === 'reasoning' && isExpanded) {
+                                toggleMessageExpansion(idx);
+                              } else {
+                                if (!isExpanded) toggleMessageExpansion(idx);
+                                setMessageTab(idx, 'reasoning');
+                              }
+                            }}
+                            className="text-xs text-gray-400 hover:text-white transition-colors"
+                            style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontSize: "10px", letterSpacing: "0.15em", fontWeight: 300 }}
+                            title="Thought Process"
+                          >
+                            💭 THOUGHT
+                          </button>
+                        )}
+                        
+                        {/* Retry button for user messages that have an error response */}
+                        {message.role === "user" && idx < messages.length - 1 && 
+                         messages[idx + 1]?.content.includes("**System Error:**") && (
+                          <button
+                            onClick={() => retryMessage(idx)}
+                            className="flex items-center gap-1 text-red-400 hover:text-red-300 transition-colors p-1 rounded hover:bg-gray-700"
+                            title="Retry this message"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="23 4 23 10 17 10"></polyline>
+                              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
             })}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="border border-gray-200 rounded px-5 py-3" style={{ background: "rgba(255, 255, 255, 0.8)", backdropFilter: "blur(20px)" }}>
-                  <p className="text-gray-800" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "13px", letterSpacing: "0.35em", fontWeight: 300 }}>ADVOCATE: ANALYZING...</p>
+                <div className="border border-gray-700 rounded px-5 py-3" style={{ background: "rgba(20, 20, 20, 0.9)", backdropFilter: "blur(20px)" }}>
+                  <p className="text-gray-300" style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontSize: "13px", letterSpacing: "0.35em", fontWeight: 300 }}>Analyzing...</p>
                 </div>
               </div>
             )}
@@ -1182,15 +1148,15 @@ currentTab === 'detailed' && isExpanded ? 'underline' : 'text-gray-500 hover:tex
         </div>
         
         {/* Input Area */}
-        <div className="border-t py-4" style={{ background: "rgba(255, 255, 255, 0.7)", backdropFilter: "blur(40px)", borderColor: "rgba(226, 232, 240, 0.8)" }}>
+        <div className="border-t py-4" style={{ background: "rgba(17, 17, 17, 0.9)", backdropFilter: "blur(40px)", borderColor: "rgba(42, 42, 42, 0.8)" }}>
           {/* Error Display */}
           {error && (
             <div className="max-w-5xl mx-auto px-8 mb-3">
-              <div className="border border-gray-400 text-gray-900 px-4 py-3 rounded-lg flex items-center justify-between" style={{ background: "rgba(243, 244, 246, 0.9)", backdropFilter: "blur(40px)", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}>
-                <span style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "11px", letterSpacing: "0.15em", fontWeight: 300 }}>{error}</span>
+              <div className="border border-red-800 text-red-300 px-4 py-3 rounded-lg flex items-center justify-between" style={{ background: "rgba(60, 20, 20, 0.9)", backdropFilter: "blur(40px)", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)" }}>
+                <span style={{ fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontSize: "11px", letterSpacing: "0.15em", fontWeight: 300 }}>{error}</span>
                 <button
                   onClick={() => setError(null)}
-                  className="text-gray-700 hover:text-black text-xl font-bold ml-4 leading-none"
+                  className="text-red-300 hover:text-white text-xl font-bold ml-4 leading-none"
                   aria-label="Dismiss error"
                 >
                   ×
@@ -1203,32 +1169,15 @@ currentTab === 'detailed' && isExpanded ? 'underline' : 'text-gray-500 hover:tex
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Describe your decision or dilemma"
-              className="flex-1 text-gray-900 placeholder:text-gray-400 focus:border-black focus-visible:ring-black"
-              style={{ 
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", 
-                fontSize: "13px", 
-                letterSpacing: "0.15em", 
-                fontWeight: 300,
-                background: "rgba(255, 255, 255, 0.8)",
-                backdropFilter: "blur(40px)",
-                borderColor: "rgba(226, 232, 240, 0.8)"
-              }}
-              disabled={isLoading}
+              className="flex-1 text-white placeholder:text-gray-500 focus:border-purple-500 focus-visible:ring-purple-500"
             />
             <Button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="text-white px-8 transition-all hover:opacity-90 border-0 shadow-lg"
-              style={{ 
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", 
-                fontSize: "11px", 
-                letterSpacing: "0.3em", 
-                fontWeight: 300,
-                background: "#000000",
-                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)"
-              }}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif", fontSize: "11px", letterSpacing: "0.2em", fontWeight: 300 }}
             >
-              SEND
+              {isLoading ? "THINKING..." : "ANALYZE"}
             </Button>
           </form>
         </div>

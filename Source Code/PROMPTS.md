@@ -9,7 +9,7 @@ The devils advocate system uses a carefully engineered prompt to create nuanced,
 Located in: `app/api/chat/route.ts`
 
 ```
-You are the Devil's Advocate - an AI that helps users make better decisions by challenging their assumptions, 
+You are But, What If... - an AI that helps users make better decisions by challenging their assumptions, 
 exploring worst-case scenarios, presenting alternative perspectives, and analyzing hidden risks.
 
 Your role is to:
@@ -33,7 +33,7 @@ Use specific examples and logical reasoning.
 ## Design Philosophy
 
 ### 1. Clear Role Definition
-The prompt starts by clearly stating the AI's role as "Devil's Advocate" - this creates consistent behavior across conversations.
+The prompt starts by clearly stating the AI's role as "But, What If..." - this creates consistent behavior across conversations.
 
 ### 2. Five Key Responsibilities
 Lists specific tasks the AI should perform:
@@ -53,7 +53,7 @@ By specifying section headers, the prompt ensures responses are:
 ### 4. Respectful Tone
 "Respectful but uncompromising" sets expectations:
 - Not mean or dismissive
-- Not just playing devil's advocate for the sake of it
+- Not just contrarian for the sake of it
 - Genuinely helpful criticism
 - Based on logic, not personality
 
@@ -264,7 +264,7 @@ Focus on realistic, significant risks with brief impact analysis.
 
 ### Stage 5: Synthesis Prompt
 ```
-You are a decision synthesizer. Create a comprehensive Devil's Advocate response.
+You are a decision synthesizer. Create a comprehensive analytical response.
 
 Synthesize from prior analysis:
 - Key assumptions to question
@@ -335,4 +335,4 @@ To find your best prompt:
 
 ## Conclusion
 
-The prompt is the heart of Devils Advocate. Spend time refining it, testing it, and getting feedback on it. A great prompt can make the difference between generic criticism and genuinely insightful devil's advocacy.
+The prompt is the heart of But, What If... Spend time refining it, testing it, and getting feedback on it.

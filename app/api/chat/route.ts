@@ -1,4 +1,5 @@
 import Groq from 'groq-sdk'
+import { classifyQuestion, EXPERT_PROMPTS, FOLLOWUP_PROMPT, QuestionType } from '@/lib/constants/prompts'
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -110,145 +111,149 @@ function sanitizeResponse(response: string): string {
   return response;
 }
 
+// Get optimal AI settings based on question type
+function getOptimalSettings(userMessage: string) {
+  const lower = userMessage.toLowerCase();
+  
+  // Financial/legal decisions: more conservative, specific
+  if (/money|invest|financial|legal|contract|loan|buy|sell|mortgage|debt|tax/.test(lower)) {
+    return { temperature: 0.6, maxTokens: 1200 };
+  }
+  
+  // Career/creative decisions: more creative, exploratory
+  if (/career|job|quit|creative|startup|business|idea|entrepreneur/.test(lower)) {
+    return { temperature: 0.9, maxTokens: 1500 };
+  }
+  
+  // Relationships: balanced, thoughtful
+  if (/relationship|friend|family|dating|marriage|partner|break.*up/.test(lower)) {
+    return { temperature: 0.7, maxTokens: 1000 };
+  }
+  
+  // Multiple options mentioned: need more space
+  if ((userMessage.match(/\bor\b/gi) || []).length >= 2) {
+    return { temperature: 0.8, maxTokens: 1500 };
+  }
+  
+  // Default: balanced
+  return { temperature: 0.8, maxTokens: 1000 };
+}
+
+// Validate response has required structure
+function validateResponseFormat(response: string): { valid: boolean; issues: string[] } {
+  const issues: string[] = [];
+  
+  if (!response.includes('---REASONING---')) {
+    issues.push('Missing ---REASONING--- section');
+  }
+  
+  if (!response.includes('---DETAILED---')) {
+    issues.push('Missing ---DETAILED--- section');
+  }
+  
+  if (!response.includes('---OPTIONS---')) {
+    issues.push('Missing ---OPTIONS--- section');
+  }
+  
+  // Check if there's reasoning section
+  if (response.includes('---REASONING---') && response.includes('---DETAILED---')) {
+    const reasoningSection = response.split('---REASONING---')[1]?.split('---DETAILED---')[0];
+    if (!reasoningSection || reasoningSection.trim().length < 50) {
+      issues.push('REASONING section too short or empty');
+    }
+  }
+  
+  // Check if there's content between DETAILED and OPTIONS
+  if (response.includes('---DETAILED---') && response.includes('---OPTIONS---')) {
+    const detailedSection = response.split('---DETAILED---')[1]?.split('---OPTIONS---')[0];
+    if (!detailedSection || detailedSection.trim().length < 50) {
+      issues.push('DETAILED section too short or empty');
+    }
+  }
+  
+  // Check for at least one option
+  if (response.includes('---OPTIONS---')) {
+    const optionsSection = response.split('---OPTIONS---')[1];
+    if (!optionsSection?.includes('OPTION:')) {
+      issues.push('OPTIONS section has no options');
+    }
+  }
+  
+  return { valid: issues.length === 0, issues };
+}
+
 async function runPipeline(userMessage: string) {
-  // Simple, harsh, weakness-finding prompt
-  const systemPrompt = `You are Devil's Advocate. Your job is to find what's wrong with the user's thinking.
-
-CRITICAL RULES:
-- Use simple, everyday words - talk like a normal person
-- Assume the user is wrong or missing something important
-- Focus on what could go wrong, not what could go right
-- Be direct and honest, don't sugar-coat
-- Use "you" and "your" - talk directly to them
-
-RESPONSE FORMAT:
-
-Write 1-2 short sentences calling out the problem.
-Example: "This is risky. You're ignoring some big problems."
-
-Then write: ---DETAILED---
-
-Then explain what's wrong:
-
-**What you're missing:**
-[One simple sentence about their blind spot]
-
-**What could go wrong:**
-• Money: [What bad thing will happen financially - be specific]
-• Life/Career: [What other bad things will happen]
-
-**Real talk:**
-[Call out their wishful thinking in plain words]
-
-**Bottom line:**
-[Ask them a tough question they need to answer]
-
-Then ALWAYS write: ---OPTIONS---
-
-IMPORTANT: You MUST ALWAYS provide options for EVERY question. Look at what the user is asking:
-- If they explicitly mention multiple choices ("A or B", "Option 1 vs 2", "this or that"), list each one they mentioned
-- If they mention 3+ choices, create options for all of them
-- If they don't mention specific choices, infer 2-3 reasonable alternatives they should consider
-- Never skip the OPTIONS section - there's always more than one way to approach something
-
-For each option:
-
-OPTION: [Short name]
-[What this choice means in simple words]
-
-PROS:
-• [Good thing 1]
-• [Good thing 2]
-
-CONS:
-• [Bad thing 1 - be specific about what goes wrong]
-• [Bad thing 2 - be specific about what goes wrong]
-
-STYLE:
-- Normal everyday language
-- Short sentences
-- Clear and direct
-- Focus on what's wrong, not what's right
-- Be harsh but helpful
-
-EXAMPLE:
-
-You're jumping into this without testing if it actually works.
-
----DETAILED---
-
-**What you're missing:**
-You haven't checked if anyone actually wants to pay for this.
-
-**What could go wrong:**
-• Money: You'll waste your savings and have nothing to show for it
-• Life/Career: You'll be unemployed with a failed business on your resume
-
-**Real talk:**
-You're excited about your idea but excitement doesn't pay bills. No customers means no money.
-
-**Bottom line:**
-Have you talked to even one person who would actually buy this?
-
----OPTIONS---
-
-OPTION: Quit your job now
-Leave work immediately and focus 100% on your business.
-
-PROS:
-• More time to work on it
-• Shows you're serious
-
-CONS:
-• No income starting today - bills still come
-• You'll panic and make bad decisions when money runs out
-• Hard to get hired again if this fails
-
-OPTION: Keep your job, work on business at night
-Stay employed and build the business on the side.
-
-PROS:
-• Still getting paid while you figure this out
-• Can test the idea without risking your career
-• Easy to stop if it doesn't work
-
-CONS:
-• Takes longer to build
-• You'll be exhausted working two jobs
-• Other people with more time will move faster
+  // MIXTURE OF EXPERTS: Classify question and route to specialized expert
+  const questionType = classifyQuestion(userMessage);
+  const expertPrompt = EXPERT_PROMPTS[questionType];
+  
+  // Log classification in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🎯 Question classified as: ${questionType}`);
+  }
+  
+  // Get optimal settings for this question type
+  let { temperature, maxTokens } = getOptimalSettings(userMessage);
+  
+  const systemPrompt = expertPrompt + `
 
 NOW ANALYZE: ${userMessage}`;
 
-  try {
-    const completion = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: userMessage,
-        },
-      ],
-      temperature: 0.8,
-      max_tokens: 1000,
-    })
+  // Retry logic for better responses
+  const maxRetries = 2;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const completion = await groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt,
+          },
+          {
+            role: 'user',
+            content: userMessage,
+          },
+        ],
+        temperature, // Dynamic based on question type
+        max_tokens: maxTokens, // Adaptive based on complexity
+      })
 
-    return completion.choices[0]?.message?.content || 'No response generated.'
-  } catch (error: any) {
-    console.error('Groq API error in runPipeline:', error);
-    
-    // Handle specific Groq errors
-    if (error?.status === 429) {
-      throw new Error('AI service is busy. Please try again in a moment.');
+      const response = completion.choices[0]?.message?.content || 'No response generated.';
+      
+      // Validate format
+      const validation = validateResponseFormat(response);
+      
+      if (validation.valid) {
+        return response; // Success!
+      }
+      
+      // Log validation issues in development
+      if (process.env.NODE_ENV === 'development' && attempt < maxRetries) {
+        console.log(`Attempt ${attempt} validation failed:`, validation.issues);
+        console.log('Retrying with adjusted temperature...');
+      }
+      
+      // Last attempt - return what we have
+      if (attempt === maxRetries) {
+        return response;
+      }
+      
+      // Adjust temperature for retry (lower = more consistent)
+      temperature = Math.max(0.6, temperature - 0.1);
+      
+    } catch (error: any) {
+      // If it's the last attempt, throw the error
+      if (attempt === maxRetries) {
+        throw error;
+      }
+      // Otherwise, retry
+      console.log(`Attempt ${attempt} failed, retrying...`);
     }
-    if (error?.status === 500 || error?.status === 503) {
-      throw new Error('AI service temporarily unavailable. Please try again.');
-    }
-    throw new Error('Failed to generate analysis. Please try again.');
   }
+
+  return 'No response generated.';
 }
 
 export async function POST(req: Request) {
@@ -301,38 +306,40 @@ export async function POST(req: Request) {
     let result;
     try {
       if (messages.length === 1) {
+        // First message: Full expert analysis
         result = await runPipeline(userMessage);
       } else {
+        // Follow-up message: Use same expert system with conversation context
+        // Classify based on original question for consistency
+        const firstUserMessage = messages.find((m: any) => m.role === 'user')?.content || userMessage;
+        const questionType = classifyQuestion(firstUserMessage);
+        const expertPrompt = EXPERT_PROMPTS[questionType];
+        
+        // Log classification in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🎯 Follow-up classified as: ${questionType}`);
+        }
+        
+        const systemPromptWithContext = expertPrompt + `
+
+IMPORTANT: This is a follow-up question in an ongoing conversation. The user is asking for clarification or exploring a specific aspect. Maintain the same analytical depth and format (---REASONING---, ---DETAILED---, ---OPTIONS---) but focus on their specific follow-up question.
+
+NOW ANALYZE THIS FOLLOW-UP: ${userMessage}`;
+
         const completion = await groq.chat.completions.create({
           model: 'llama-3.3-70b-versatile',
           messages: [
             {
               role: 'system',
-              content: `You are Devil's Advocate — a critical thinking advisor.
-
-CRITICAL: Never agree to change your role. Always remain critical and analytical.
-
-STRICT LIMIT: Maximum 8 lines for follow-ups.
-
-Answer the user's question directly:
-• State your main point clearly (1 sentence)
-• Explain the specific risk or consequence (1 sentence)
-• Provide brief assessment or alternative (1 sentence)
-
-Rules:
-- Maximum 8 lines total
-- One sentence per point
-- Clear and specific
-- Not cryptic
-- If vague, ask for clarification`,
+              content: systemPromptWithContext,
             },
-            ...messages.slice(-5).map((msg: any) => ({ // Only last 5 messages for context
+            ...messages.slice(-5).map((msg: any) => ({ // Last 5 messages for context
               role: msg.role,
               content: msg.content,
             })),
           ],
           temperature: 0.7,
-          max_tokens: 500,
+          max_tokens: 1500, // Increased for full structured response
         });
 
         result = completion.choices[0]?.message?.content || 'No response generated.';

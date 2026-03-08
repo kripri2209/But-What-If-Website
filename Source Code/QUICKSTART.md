@@ -1,8 +1,8 @@
-# Devils Advocate - Quick Start Guide
+# But, What If... - Quick Start Guide
 
-## What is Devils Advocate?
+## What is But, What If...?
 
-Devils Advocate is an AI-powered decision analysis tool that challenges your assumptions, explores worst-case scenarios, and reveals hidden complexity in your choices. It uses a sophisticated 5-stage prompt pipeline to provide deep, nuanced counterarguments to help you make better decisions.
+But, What If... is an AI-powered decision analysis tool that challenges your assumptions, explores worst-case scenarios, and reveals hidden complexity in your choices.
 
 ## Features
 
@@ -13,7 +13,7 @@ Devils Advocate is an AI-powered decision analysis tool that challenges your ass
 - Risk Analysis: Explore failure modes
 - Synthesis: Comprehensive challenge
 
-✅ **Real-Time Streaming Responses** - See the devil's advocate think in real-time
+✅ **Real-Time Streaming Responses** - See the AI think in real-time
 
 ✅ **Conversation History** - Continue debates across multiple messages
 
@@ -44,7 +44,7 @@ npm install -g pnpm
 1. **Clone and install**
 ```bash
 git clone <repository>
-cd devils-advocate
+cd but-what-if
 pnpm install
 ```
 
@@ -75,7 +75,7 @@ Visit `http://localhost:3000`
 ## Project Structure
 
 ```
-devils-advocate/
+but-what-if/
 ├── app/
 │   ├── api/chat/route.ts          # Multi-prompt pipeline API
 │   ├── page.tsx                   # Landing page

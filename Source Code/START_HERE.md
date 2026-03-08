@@ -1,10 +1,10 @@
-# 🚀 START HERE - Devils Advocate Project Guide
+# 🚀 START HERE - But, What If... Project Guide
 
-Welcome to **Devils Advocate** - an AI-powered decision analysis chatbot that challenges your assumptions and explores the hidden complexity of your choices.
+Welcome to **But, What If...** - an AI-powered decision analysis chatbot that challenges your assumptions and explores the hidden complexity of your choices.
 
 ## ✨ What Is This?
 
-A full-stack web application that helps users make better decisions by acting as a "devil's advocate" through an advanced 5-stage AI analysis pipeline.
+A full-stack web application that helps users make better decisions by acting as a critical thinking advisor through an advanced AI analysis pipeline.
 
 **Key Innovation**: Multi-prompt pipeline that systematically challenges decisions through:
 1. **Parse** - Extract core decision
@@ -119,7 +119,7 @@ Choose your path based on what you need:
 ## 📂 Project Structure
 
 ```
-devils-advocate/
+but-what-if/
 ├── app/                        # Next.js pages
 │   ├── page.tsx               # Landing page
 │   ├── chat/page.tsx          # Chat interface
@@ -172,7 +172,7 @@ STAGE 3: Counterarguments generates "You might fail financially, Market might be
     ↓
 STAGE 4: Risk Analysis discovers "Family impact, Resume gap, Loss of benefits"
     ↓
-STAGE 5: Synthesis creates comprehensive Devil's Advocate response
+STAGE 5: Synthesis creates comprehensive analytical response
     ↓
 Response streamed to user in real-time
 ```
@@ -205,7 +205,7 @@ Follow: [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 ## 💡 Key Concepts
 
-### The "Devil's Advocate" Approach
+### The Critical Thinking Approach
 Instead of helping users confirm decisions, this AI actively challenges them to think deeper and consider what they might be missing.
 
 ### 5-Stage Pipeline
@@ -298,7 +298,7 @@ A: Follow the step-by-step guide in [DEPLOYMENT.md](./DEPLOYMENT.md).
 Before considering complete, verify:
 - [ ] Landing page loads and shows features
 - [ ] Can send message in chat interface
-- [ ] API returns devil's advocate response
+- [ ] API returns analytical response
 - [ ] Response streams in real-time
 - [ ] Messages saved to database
 - [ ] Can send follow-up messages
@@ -352,9 +352,9 @@ pnpm dev
 # 5. Visit http://localhost:3000
 ```
 
-**Welcome to Devils Advocate!** 🎯
+**Welcome to But, What If...!** 🎯
 
-Start challenging decisions and revealing complexity. The devil's in the details, and we're here to expose them.
+Start challenging decisions and revealing complexity.
 
 ---
 

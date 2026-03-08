@@ -1,10 +1,10 @@
-# Devils Advocate - AI-Powered Decision Challenger
+# But, What If... - AI-Powered Decision Challenger
 
-Devils Advocate is an intelligent decision-making assistant that challenges your assumptions, explores worst-case scenarios, and reveals the hidden complexity of your choices. Instead of encouraging confirmation bias, it acts as your personal contrarian advisor.
+But, What If... is an intelligent decision-making assistant that challenges your assumptions, explores worst-case scenarios, and reveals the hidden complexity of your choices. Instead of encouraging confirmation bias, it acts as your personal contrarian advisor.
 
 ## What It Does
 
-Devils Advocate uses AI to help you make better decisions by:
+But, What If... uses AI to help you make better decisions by:
 
 1. **Challenging Assumptions** - Identifies the hidden beliefs and biases driving your decision
 2. **Presenting Counterarguments** - Offers powerful opposing viewpoints you may have overlooked
@@ -45,13 +45,13 @@ All tables use Row Level Security (RLS) to ensure users only access their own da
 
 ## Pages
 
-- **`/`** - Landing page introducing Devils Advocate
+- **`/`** - Landing page introducing But, What If...
 - **`/chat`** - Multi-turn chat interface for challenging decisions
 - **`/analytics`** - Dashboard showing decision history and patterns
 
 ## Key Features
 
-- **Multi-turn Conversations** - Debate with the devil's advocate across multiple messages
+- **Multi-turn Conversations** - Debate with the AI across multiple messages
 - **Streaming Responses** - Real-time AI response streaming for immediate feedback
 - **Conversation History** - Track and review all decisions challenged
 - **Decision Analytics** - View patterns in your assumptions and common risks
@@ -88,7 +88,7 @@ pnpm dev
 
 1. Visit the landing page and click "Start Debating"
 2. Share a decision you're making or considering
-3. Devils Advocate will challenge your thinking with:
+3. But, What If... will challenge your thinking with:
    - Hidden assumptions you're making
    - Strong counterarguments
    - Potential risks and failures
@@ -111,7 +111,7 @@ This is Meta's Llama 3.3 model with 70 billion parameters, optimized for versati
 
 Major Prompt Engineering Techniques:
 1. Role-Based Prompting
-Assigns clear identity: "You are DEVIL'S ADVOCATE — an intelligent contrarian advisor"
+Assigns clear identity: "You are But, What If... — an intelligent contrarian advisor"
 Defines explicit purpose: "Your role is NOT to support... Your role is to stress-test"
 2. Structured Output Format
 Forces 6-section response structure:

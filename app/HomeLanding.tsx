@@ -20,7 +20,7 @@ export default function HomeLanding({ onChatClick }: { onChatClick: () => void }
         borderBottom: '1px solid rgba(255,255,255,0.1)'
       }}>
         <div style={{ fontSize: '1.25rem', fontWeight: '600', letterSpacing: '0.05em' }}>
-          Devil's Advocate
+          But, What If...
         </div>
         <div style={{ display: 'flex', gap: '3rem', alignItems: 'center' }}>
           <a style={{ color: '#fff', textDecoration: 'none', fontSize: '0.95rem', borderBottom: '2px solid #6366f1', paddingBottom: '0.25rem' }}>Home</a>
@@ -56,7 +56,7 @@ export default function HomeLanding({ onChatClick }: { onChatClick: () => void }
       }}>
         {/* Logo Section */}
         <div style={{ marginBottom: '3rem' }}>
-          {/* "Devil's Advocate" main logo */}
+          {/* "But, What If..." main logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
             <div style={{
               background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)',
@@ -85,7 +85,7 @@ export default function HomeLanding({ onChatClick }: { onChatClick: () => void }
                 letterSpacing: '0.03em',
                 position: 'relative' as const,
                 zIndex: 1
-              }}>Devil's Advocate</span>
+              }}>But, What If...</span>
             </div>
             
             {/* Thinking emoji circle */}

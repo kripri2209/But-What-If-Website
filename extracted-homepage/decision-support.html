@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>but, WHATIF – Decision Support</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --card-border: #252525;
+      --accent: #1e3a5f;
+      --accent-bright: #3b82f6;
+      --text: #f0f0f0;
+      --muted: #888;
+      --tag-dark: #1a1a1a;
+      --tag-light: #e8e8e0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Page wrapper for services section ── */
+    .page-wrap {
+      padding: 60px 40px 80px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* ══════════════════════════════════════
+       NAVBAR
+    ══════════════════════════════════════ */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      border-bottom: 1px solid #1f1f1f;
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-logo {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .nav-logo span { color: var(--text); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: #bbb;
+      font-size: 14px;
+      font-weight: 400;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-cta {
+      background: var(--text);
+      color: #111;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: opacity 0.2s;
+    }
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* ── Yellow accent line under nav ── */
+    .nav-accent {
+      height: 2px;
+      background: linear-gradient(90deg, #f5c842 0%, #f5c84200 60%);
+    }
+
+    /* ══════════════════════════════════════
+       HERO
+    ══════════════════════════════════════ */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 80px 40px 100px;
+    }
+
+    /* Stacked pill badges */
+    .hero-titles {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      line-height: 1;
+      font-weight: 700;
+      font-size: clamp(40px, 7vw, 80px);
+      letter-spacing: -0.03em;
+      position: relative;
+    }
+
+    .hero-pill-dark {
+      background: transparent;
+      border: 2px solid #3a3a3a;
+      color: var(--text);
+      padding: 22px 52px;
+      width: fit-content;
+      border-radius: 16px;
+    }
+
+    /* Light pill + emoji circle row */
+    .hero-pill-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .hero-pill-light {
+      background: var(--tag-light);
+      color: #111;
+      padding: 24px 56px;
+      flex-shrink: 0;
+      border-radius: 16px;
+    }
+
+    .hero-emoji-circle {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: #6c63ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 52px;
+      flex-shrink: 0;
+      animation: floatBob 3s ease-in-out infinite;
+    }
+
+    @keyframes floatBob {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
+    }
+
+    .hero-sub {
+      font-size: 15px;
+      color: #888;
+      font-weight: 300;
+      margin-bottom: 36px;
+      max-width: 480px;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .btn-primary {
+      background: var(--text);
+      color: #111;
+      border: none;
+      border-radius: 16px;
+      padding: 14px 32px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+
+    .btn-ghost {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: opacity 0.2s;
+    }
+    .btn-ghost:hover { opacity: 0.6; }
+
+    /* ── Bottom tagline ── */
+    .hero-tagline {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 40px 80px;
+      font-size: clamp(22px, 3.5vw, 38px);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-section-divider {
+      height: 1px;
+      background: #1f1f1f;
+      margin: 0 40px;
+    }
+
+    /* ══════════════════════════════════════
+       HERO ANIMATIONS
+    ══════════════════════════════════════ */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-titles { animation: fadeUp 0.55s ease both; }
+    .hero-sub    { animation: fadeUp 0.55s 0.1s ease both; }
+    .hero-actions{ animation: fadeUp 0.55s 0.2s ease both; }
+    .hero-tagline{ animation: fadeUp 0.55s 0.3s ease both; }
+
+    /* ══════════════════════════════════════
+       BENTO SECTION
+    ══════════════════════════════════════ */
+    .bento-section {
+      background: var(--bg);
+      padding: 0 40px 100px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* overlapping tagline that sits between services and bento */
+    .overlap-tagline {
+      font-size: clamp(22px, 3.5vw, 38px);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      padding: 60px 40px 48px;
+      max-width: 760px;
+      margin: 0 auto 0;
+    }
+
+    .bento-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 16px;
+    }
+
+    /* ── Tall left card (spans 2 rows) ── */
+    .bento-card {
+      border-radius: 24px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bento-tall { grid-row: span 2; background: #e8e8e0; color: #111; display: flex; flex-direction: column; justify-content: space-between; min-height: 520px; }
+    .bento-purple { background: #6c63ff; color: #fff; min-height: 248px; }
+    .bento-pink-top { background: #f5c9c9; color: #555; min-height: 248px; }
+    .bento-pink-bot { background: #f5c9c9; color: #555; min-height: 248px; }
+    .bento-green { background: #5db585; color: #fff; min-height: 248px; }
+
+    /* ── Fork it text ── */
+    .bento-tall-headline { margin-top: auto; }
+    .fork-line   { font-size: clamp(28px, 3.5vw, 42px); font-weight: 800; color: #111; letter-spacing: -0.03em; line-height: 1.1; }
+    .fork-blue   { color: #3b5bdb; }
+    .fork-green  { color: #2d9e5d; }
+
+    /* help us badge */
+    .help-badge {
+      display: inline-block;
+      background: #3b5bdb;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 8px;
+      transform: rotate(-5deg);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      width: fit-content;
+    }
+
+    /* code block */
+    .code-block {
+      background: #1a1a2e;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 10.5px;
+      color: #a0c4ff;
+      line-height: 1.7;
+      overflow: hidden;
+      max-height: 130px;
+    }
+    .code-block span.kw { color: #c792ea; }
+    .code-block span.fn { color: #82aaff; }
+    .code-block span.st { color: #c3e88d; }
+
+    /* ── Purple pill cards ── */
+    .pill-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .pill-card {
+      background: #111;
+      color: #f0f0f0;
+      border-radius: 14px;
+      padding: 14px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      position: relative;
+    }
+
+    .pill-card.angled { transform: rotate(-2deg); }
+    .pill-card.angled2 { transform: rotate(1.5deg); }
+    .pill-card .pill-sub { font-size: 12px; font-weight: 400; color: #888; margin-top: 3px; }
+
+    /* ── Think. Then Think. Again. ── */
+    .think-text {
+      font-size: clamp(28px, 3vw, 40px);
+      font-weight: 800;
+      color: #888;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+    .think-emoji {
+      font-size: 52px;
+      position: absolute;
+      bottom: 28px;
+      right: 28px;
+    }
+
+    /* ── Alt views card (pink bottom left) ── */
+    .alt-pill-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+    }
+
+    .floating-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      transform: rotate(-4deg);
+      display: inline-block;
+      width: fit-content;
+    }
+
+    .alt-main-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      position: relative;
+    }
+    .alt-main-card .edit-tag {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: #3b82f6;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .alt-check {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid #5db585;
+      display: flex; align-items: center; justify-content: center;
+      color: #5db585; font-size: 14px; flex-shrink: 0;
+    }
+    .alt-main-title { font-size: 18px; font-weight: 700; color: #111; }
+
+    .alt-bottom-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      transform: rotate(3deg);
+      display: inline-block;
+      margin-top: 4px;
+    }
+
+    .alt-small-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      align-self: flex-end;
+      width: 70%;
+    }
+    .alt-small-icon {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 2px solid #5db585;
+      display: flex; align-items: center; justify-content: center;
+      color: #5db585; font-size: 13px; flex-shrink: 0;
+    }
+    .alt-small-title { font-size: 14px; font-weight: 600; color: #111; }
+
+    /* ── Green sounds good card ── */
+    .bubble-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: flex-start;
+      padding-top: 8px;
+    }
+
+    .bubble {
+      position: relative;
+      padding: 12px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      width: fit-content;
+      border-radius: 12px;
+    }
+
+    .bubble-purple { background: #7c6ef5; color: #fff; }
+    .bubble-yellow { background: #f5c842; color: #111; }
+    .bubble-white  { background: #fff; color: #111; }
+
+    /* ══════════════════════════════════════
+       NOTHING TO LOSE
+    ══════════════════════════════════════ */
+    .ntl-section {
+      background: #0e1a2b;
+      padding: 90px 60px 100px;
+    }
+
+    .ntl-heading {
+      font-size: clamp(60px, 9vw, 120px);
+      font-weight: 300;
+      color: #c8d8e8;
+      line-height: 1.0;
+      letter-spacing: -0.04em;
+      margin-bottom: 48px;
+    }
+
+    .ntl-pills {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .ntl-pill-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .ntl-pill {
+      border: 2px solid #2e4060;
+      color: #c8d8e8;
+      font-size: clamp(22px, 3vw, 38px);
+      font-weight: 400;
+      padding: 18px 40px;
+      border-radius: 16px;
+      letter-spacing: -0.02em;
+      background: transparent;
+    }
+
+    .ntl-pill-green {
+      border: 2px solid #22c55e55;
+      color: #22c55e;
+      font-size: clamp(22px, 3vw, 38px);
+      font-weight: 700;
+      padding: 18px 40px;
+      border-radius: 16px;
+      letter-spacing: -0.02em;
+      background: transparent;
+    }
+
+    /* ══════════════════════════════════════
+       FAQ SECTION
+    ══════════════════════════════════════ */
+    .faq-section {
+      background: var(--bg);
+      padding: 80px 60px 60px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .faq-title {
+      font-size: clamp(24px, 3.5vw, 42px);
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 32px;
+    }
+
+    .faq-divider {
+      height: 1px;
+      background: #2a2a2a;
+      margin-bottom: 0;
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .faq-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      padding: 28px 0;
+      border-bottom: 1px solid #1e1e1e;
+      align-items: start;
+    }
+
+    .faq-row-highlight {
+      border: 1.5px solid #1e3d6b;
+      border-radius: 10px;
+      background: #0f1e33;
+      padding: 28px 24px;
+      margin: 4px 0;
+    }
+
+    .faq-q {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .faq-a {
+      font-size: 13.5px;
+      color: #999;
+      line-height: 1.7;
+      font-weight: 300;
+      position: relative;
+    }
+
+    .faq-edit-pill {
+      position: absolute;
+      top: -6px;
+      right: 0;
+      background: #3b82f6;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ══════════════════════════════════════
+       FINAL CTA
+    ══════════════════════════════════════ */
+    .cta-section {
+      background: var(--bg);
+      text-align: center;
+      padding: 80px 40px 120px;
+    }
+
+    .cta-heading {
+      font-size: clamp(36px, 6vw, 76px);
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .cta-sub {
+      font-size: 15px;
+      color: #888;
+      font-weight: 300;
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── Header badges ── */
+    .header {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 32px;
+      animation: fadeUp 0.5s 0.35s ease both;
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 0.02em;
+      line-height: 1;
+    }
+
+    .badge-dark {
+      background: transparent;
+      border: 2px solid #333;
+      color: var(--text);
+      font-size: clamp(28px, 5vw, 52px);
+      padding: 18px 42px;
+    }
+
+    .badge-light {
+      background: var(--tag-light);
+      color: #111;
+      font-size: clamp(36px, 7vw, 68px);
+      padding: 20px 48px;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 300;
+      margin-top: 8px;
+      letter-spacing: 0.01em;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, #fff2 0%, #fff0 100%);
+      margin-bottom: 0;
+    }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: auto auto;
+      border-left: 1px solid var(--card-border);
+      border-top: 1px solid var(--card-border);
+    }
+
+    .card {
+      border-right: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--card-border);
+      padding: 32px 28px 36px;
+      position: relative;
+      transition: background 0.2s ease;
+    }
+
+    .card:hover {
+      background: #1a1a1a;
+    }
+
+    .card.highlighted {
+      background: #152540;
+      border-color: #1e3d6b;
+    }
+
+    .card.highlighted:hover {
+      background: #1a2e50;
+    }
+
+    /* Empty cells to fill layout gaps */
+    .card-empty {
+      border-right: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    /* Edit pill */
+    .edit-pill {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: var(--accent-bright);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    /* Icon wrapper */
+    .icon-wrap {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 22px;
+    }
+
+    .icon-wrap svg {
+      width: 26px;
+      height: 26px;
+      stroke: var(--text);
+      fill: none;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .highlighted .icon-wrap svg {
+      stroke: var(--accent-bright);
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+
+    .highlighted .card-title {
+      color: var(--accent-bright);
+    }
+
+    .card-desc {
+      font-size: 13.5px;
+      color: #999;
+      line-height: 1.65;
+      font-weight: 300;
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .grid   { animation: fadeUp 0.5s 0.45s ease both; }
+  </style>
+</head>
+<body>
+
+  <!-- ══ NAVBAR ══ -->
+  <nav>
+    <span class="nav-logo">but, WHATIF</span>
+    <ul class="nav-links">
+      <li><a href="#">Home</a></li>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Service</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+    <button class="nav-cta">Challenge Your Idea</button>
+  </nav>
+  <div class="nav-accent"></div>
+
+  <!-- ══ HERO ══ -->
+  <section class="hero">
+    <div class="hero-titles">
+      <div class="hero-pill hero-pill-dark">        but ,
+      </div>
+      <div class="hero-pill-row">
+        <div class="hero-pill hero-pill-light">          What if ...
+        </div>
+        <div class="hero-emoji-circle">🤔</div>
+      </div>
+    </div>
+    <p class="hero-sub">Run your brilliant plan through AI first. Reality tends to be less polite.</p>
+    <div class="hero-actions">
+      <button class="btn-primary">Challenge Now</button>
+      <button class="btn-ghost">Learn More</button>
+    </div>
+  </section>
+
+  <div class="hero-section-divider"></div>
+
+  <!-- ══ BENTO SECTION ══ -->
+  <div class="overlap-tagline">
+    Logic, risk analysis, and a few perspectives you might not enjoy—but probably need.&nbsp; And we'll be with you .
+  </div>
+
+  <div class="bento-section">
+    <div class="bento-grid">
+
+      <!-- TALL LEFT: Fork it -->
+      <div class="bento-card bento-tall">
+        <div class="help-badge">help us build better</div>
+        <div>
+          <div class="bento-tall-headline">
+            <div class="fork-line">Fork it.</div>
+            <div class="fork-line fork-blue">Break it.</div>
+            <div class="fork-line fork-green">Improve it.</div>
+          </div>
+          <div class="code-block" style="margin-top:20px;">
+            <span class="kw">setChatSessions</span>(updateSessions);<br>
+            localStorage.setItem(<span class="st">'chatSessions'</span>, JSON.stringify(updatedSessions));<br>
+            }, messages, currentChatId);<br><br>
+            <span class="kw">const</span> <span class="fn">generateChatTitle</span> = (msgs: ChatMessage[]): string => {<br>
+            &nbsp;&nbsp;<span class="kw">const</span> userMsg = msgs.find( m => m.role === <span class="st">'user'</span>);<br>
+            &nbsp;&nbsp;<span class="kw">if</span> (userMsg) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> userMsg.content.slice(0, 40) + (userMsg.content.length > 40 ? <span class="st">'...'</span> : <span class="st">''</span>);<br>
+            &nbsp;&nbsp;}<br>
+            &nbsp;&nbsp;<span class="kw">return</span> <span class="st">'New Chat'</span>;<br>
+            };<br><br>
+            <span class="kw">const</span> createNewChat = () => {<br>
+            &nbsp;&nbsp;<span class="kw">const</span> newId = Date.now().toString();<br>
+            &nbsp;&nbsp;<span class="kw">const</span> newSession: ChatSession = {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;id: newId,
+          </div>
+        </div>
+      </div>
+
+      <!-- PURPLE: Pill cards -->
+      <div class="bento-card bento-purple">
+        <div class="pill-stack">
+          <div class="pill-card angled">Blindspot Detection</div>
+          <div class="pill-card">
+            Logical Weakness Check
+            <div class="pill-sub">Find flaws in your logic.</div>
+          </div>
+          <div class="pill-card angled2">Risk Identification</div>
+        </div>
+      </div>
+
+      <!-- PINK TOP RIGHT: Think. Then Think. Again. -->
+      <div class="bento-card bento-pink-top">
+        <div class="think-text">Think.<br>Then Think.<br>Again.</div>
+        <div class="think-emoji">🤩</div>
+      </div>
+
+      <!-- PINK BOTTOM MIDDLE: Alternative Views -->
+      <div class="bento-card bento-pink-bot">
+        <div class="alt-pill-stack">
+          <span class="floating-label">Bias Neutralization</span>
+          <div class="alt-main-card">
+            <div class="alt-check">✓</div>
+            <div class="alt-main-title">Alternative<br>Views</div>
+            <span class="edit-tag">Edit</span>
+          </div>
+          <span class="alt-bottom-label">Hidden Assumption Audit</span>
+          <div class="alt-small-card">
+            <div class="alt-small-icon">✓</div>
+            <div class="alt-small-title">Decision Validation</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GREEN: Sounds good bubbles -->
+      <div class="bento-card bento-green">
+        <div class="bubble-stack">
+          <div class="bubble bubble-purple">            Sounds Good.
+          </div>
+          <div class="bubble bubble-yellow">            Questionable
+          </div>
+          <div class="bubble bubble-white">            What could go wrong?
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ NOTHING TO LOSE ══ -->
+  <section class="ntl-section">
+    <h2 class="ntl-heading">Nothing<br>to lose.</h2>
+    <div class="ntl-pills">
+      <div class="ntl-pill-row">
+        <div class="ntl-pill">          No login.
+        </div>
+        <div class="ntl-pill">          No Cost .
+        </div>
+      </div>
+      <div class="ntl-pill ntl-pill-green">        Just Smarter Choices
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ SERVICES ══ -->
+  <div class="page-wrap">
+
+  <div class="header">
+    <span class="badge badge-dark">Our Services</span>
+    <span class="badge badge-light">Decision Support</span>
+    <p class="subtitle">We examine risks and different perspectives to strengthen your choices.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="grid">
+
+    <!-- Row 1 -->
+    <div class="card">
+      <div class="icon-wrap">
+        <svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="16" y2="10"/><line x1="4" y1="14" x2="12" y2="14"/><polyline points="4 18 8 22 12 18"/></svg>
+      </div>
+      <div class="card-title">Parser</div>
+      <div class="card-desc">The system reads the input and breaks it into key points</div>
+    </div>
+
+    <div class="card">
+      <div class="icon-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3 A9 9 0 0 1 12 21" fill="rgba(255,255,255,0.12)"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+      </div>
+      <div class="card-title">Assumptions</div>
+      <div class="card-desc">The AI finds hidden assumptions behind the decision.</div>
+    </div>
+
+    <div class="card">
+      <div class="icon-wrap">
+        <svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18" stroke-width="2.5"/></svg>
+      </div>
+      <div class="card-title">Counterarguments</div>
+      <div class="card-desc">The AI generates arguments against the decision.</div>
+    </div>
+
+    <div class="card">
+      <div class="icon-wrap">
+        <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      </div>
+      <div class="card-title">Risk Analysis</div>
+      <div class="card-desc">The system identifies possible risks or negative outcomes.</div>
+    </div>
+
+    <!-- Row 2: empty col + two cards + empty col -->
+    <div class="card-empty"></div>
+
+    <div class="card">
+      <div class="icon-wrap">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14" stroke-width="2.5"/><line x1="12" y1="14" x2="12" y2="14" stroke-width="2.5"/><line x1="16" y1="14" x2="16" y2="14" stroke-width="2.5"/><line x1="8" y1="18" x2="8" y2="18" stroke-width="2.5"/><line x1="12" y1="18" x2="12" y2="18" stroke-width="2.5"/></svg>
+      </div>
+      <div class="card-title">Logical Stress</div>
+      <div class="card-desc">Test the structural integrity of your reasoning process.</div>
+    </div>
+
+    <div class="card">
+      <div class="icon-wrap">
+        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><polyline points="8 10 5 13 8 16"/><polyline points="16 10 19 13 16 16"/><line x1="12" y1="8" x2="12" y2="18"/></svg>
+      </div>
+      <div class="card-title">Alternative Paths</div>
+      <div class="card-desc">Explore different routes you might have totally missed.</div>
+    </div>
+
+    <div class="card-empty"></div>
+
+  </div>
+
+    </div><!-- /.page-wrap -->
+
+  <!-- ══ FAQ + CTA ══ -->
+  <section class="faq-section">
+    <h2 class="faq-title">Frequently Asked Questions</h2>
+    <div class="faq-divider"></div>
+
+    <div class="faq-list">
+
+      <div class="faq-row">
+        <div class="faq-q">How does the AI challenge?</div>
+        <div class="faq-a">It breaks down your idea, finds assumptions, and uses AI reasoning to generate counterarguments and risks from different perspectives.</div>
+      </div>
+
+      <div class="faq-row">
+        <div class="faq-q">Who is this tool for?</div>
+        <div class="faq-a">
+          It is for anyone facing complex choices who wants a second opinion.
+        </div>
+      </div>
+
+      <div class="faq-row">
+        <div class="faq-q">Is my data private?</div>
+        <div class="faq-a">Yes, your data is private. Conversations, messages, and decision analytics are protected so that only you can view your information. This is confirmed in the project summary and database setup.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ FINAL CTA ══ -->
+  <section class="cta-section">
+    <h2 class="cta-heading">Ready to stress-<br>test your ideas?</h2>
+    <p class="cta-sub">Challenge your assumptions today to build a more resilient and certain future.</p>
+  </section>
+
+</body>
+</html>

@@ -1,7 +1,7 @@
 import { ChatInterface } from '@/components/chat-interface'
 
 export const metadata = {
-  title: 'Chat - Devils Advocate',
+  title: 'Chat - But, What If...',
   description: 'Challenge your decisions with AI-powered devil\'s advocacy',
 }
 
