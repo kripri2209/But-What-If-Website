@@ -12,6 +12,18 @@ But, What If... uses AI to help you make better decisions by:
 4. **Analyzing Hidden Risks** - Uncovers non-obvious costs, consequences, and ripple effects
 5. **Revealing Complexity** - Helps you understand trade-offs and what you're truly missing
 
+## ScreenShots of Website 
+<img width="1543" height="797" alt="Screenshot 2026-03-08 163137" src="https://github.com/user-attachments/assets/2c3b09ac-9a35-407c-a339-c01dc246ba4f" />
+
+<img width="1578" height="876" alt="Screenshot 2026-03-08 163240" src="https://github.com/user-attachments/assets/be917b2c-b780-4b55-afbe-8d0148153023" />
+
+<img width="540" height="588" alt="Screenshot 2026-03-08 155410" src="https://github.com/user-attachments/assets/2fc557e0-7b0e-4379-a48e-19d7e52b5081" />
+
+<img width="855" height="760" alt="Screenshot 2026-03-08 155452" src="https://github.com/user-attachments/assets/a95276ec-8242-4e43-9ea2-dd2effe85baa" />
+
+<img width="1007" height="681" alt="Screenshot 2026-03-08 155334" src="https://github.com/user-attachments/assets/34b31b97-172d-4fbc-a209-73ea5e6ab279" />
+
+
 ## Technology Stack
 
 - **Frontend**: Next.js 16 + React 19 + shadcn/ui + Tailwind CSS v4
@@ -69,6 +81,11 @@ User Input
 
 ## Getting Started
 
+A. Verecel 
+https://but-what-if.vercel.app
+
+B. Manually
+
 1. Install dependencies:
 ```bash
 pnpm install
@@ -90,7 +107,7 @@ pnpm dev
 
 ## Usage
 
-1. Visit the chat interface at [http://localhost:3000](http://localhost:3000)
+1. Visit the chat interface at " https://but-what-if.vercel.app "
 2. Share a decision you're making or considering
 3. But, What If... will challenge your thinking with:
    - **Reasoning**: Step-by-step analysis of your decision
@@ -211,6 +228,7 @@ Key Principles:
 - Team collaboration and shared decisions
 - More AI providers (Claude, Grok, etc.)
 - Mobile app version
+And many more...
 
 ## License
 
