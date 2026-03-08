@@ -1,8 +1,11 @@
-# AI Model Improvement Techniques
+# AI Model Improvement Techniques 
+What I Wish I Could Have Improved in the AI System
+
+With more time and resources, there are several areas where the AI system used in this chatbot could have been improved. While the current implementation provides structured analysis and logical reasoning, further enhancements could significantly improve response depth, accuracy, and efficiency.
 
 ## Current Implementation Analysis
 
-### ✅ What We're Already Using
+### What We're Already Using
 1. **Structured Prompting** - Clear format with delimiters (---DETAILED---, ---OPTIONS---)
 2. **Few-Shot Learning** - Complete example provided in system prompt
 3. **Role Prompting** - Clear identity as "But, What If..."
@@ -10,7 +13,7 @@
 5. **Token Limits** - 1000 tokens for main responses, 500 for follow-ups
 6. **Context Window Management** - Last 5 messages for follow-ups
 
-### 🚀 Recommended Improvements
+### Recommended Improvements
 
 ## 1. Chain-of-Thought (CoT) Prompting
 **What it is:** Making the AI think step-by-step before answering.
@@ -262,19 +265,19 @@ async function getEnsembleResponse(userMessage: string) {
 ## Priority Recommendations
 
 ### Easy Wins (Implement Now)
-1. ✅ **Dynamic Temperature** - 10 minutes, immediate improvement
-2. ✅ **Adaptive Max Tokens** - 10 minutes, better quality
-3. ✅ **Response Validation** - 20 minutes, more reliable
-4. ✅ **Constitutional AI** - 15 minutes, consistent quality
+1. **Dynamic Temperature** - 10 minutes, immediate improvement
+2.  **Adaptive Max Tokens** - 10 minutes, better quality
+3.  **Response Validation** - 20 minutes, more reliable
+4.  **Constitutional AI** - 15 minutes, consistent quality
 
 ### Medium Effort (Next Sprint)
-5. ⚡ **Chain-of-Thought** - 1 hour, deeper analysis
-6. ⚡ **Semantic Caching** - 2-3 hours, cost savings
-7. ⚡ **Prompt Compression** - 1 hour, more response space
+5. **Chain-of-Thought** - 1 hour, deeper analysis
+6.  **Semantic Caching** - 2-3 hours, cost savings
+7.  **Prompt Compression** - 1 hour, more response space
 
 ### Long-Term (Future)
-8. 🔮 **RAG with Knowledge Base** - 1-2 weeks, data-backed responses
-9. 🔮 **Self-Consistency Sampling** - 1 day, premium tier feature
+8. **RAG with Knowledge Base** - 1-2 weeks, data-backed responses
+9.  **Self-Consistency Sampling** - 1 day, premium tier feature
 10. 🔮 **Multi-Model Ensemble** - 1 week, highest quality
 
 ---
